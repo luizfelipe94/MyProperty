@@ -1,0 +1,27 @@
+{
+  "name": "myproperty",
+  "version": "1.0.0",
+  "description": "Property crawler",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon index.js",
+    "prod": "pm2 index.js"
+  },
+  "author": "Luiz Felipe da Silva",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "cors": "^2.8.5",
+    "dotenv": "^7.0.0",
+    "express": "^4.16.4",
+    "mongoose": "^5.5.4",
+    "morgan": "^1.9.1",
+    "pm2": "^3.5.0"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^6.1.4",
+    "nodemon": "^1.18.11"
+  }
+}
