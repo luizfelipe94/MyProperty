@@ -17,7 +17,7 @@ async function main(){
         require('./lib/mongo');
 
         //routes
-        require('./routes/main')(app);
+        require('./routes/main')(routes);
 
         const PORT = process.env.API_PORT || 3000;
         app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
