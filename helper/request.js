@@ -1,26 +1,33 @@
-const R = require('request');
+const rp = require('request-promise');
+var tough = require('tough-cookie');
 
 class Request {
     constructor(){
 
     }
 
-    static get(url, callback){
-        R(url, (error, response, body) => {
-            if(error) {
-                return console.error(`ERRO: ${error}`);
-            }
-            callback(body);
-        });
+    static async req(options){
+        if(!options.url) throw new Error("Necessario passar a url.");
+        if(!options.method) options.method = "get";
+        const result = rp(options)
+        .then(resp => resp )
+        .catch(err => err);
+        return result;
     }
 
-    static post(url, form, callback){
-        R.post({ url, form: form }, (error, response, body) => {
-            if(error) {
-                return console.error(`ERRO: ${error}`);
-            }
-            callback(body);
-        });
+    static async formatCookies(cookies){
+        const result = [];
+        for(const cookie in cookies){
+            let aux = new tough.Cookie({
+                key: cookies[cookie],
+                value: cookie,
+                domain: 'api.mydomain.com',
+                httpOnly: true,
+                maxAge: 31536000
+            });
+            result.push(aux);
+        }
+        return result;
     }
 }
 
