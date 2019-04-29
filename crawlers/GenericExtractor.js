@@ -9,6 +9,13 @@ class GenericExtractor {
         this.cheerio = cheerio;
     }
 
+    async getMainInfo(html){
+
+    }
+
+    async getPropertyDetails(html){
+        
+    }
     
 }
 

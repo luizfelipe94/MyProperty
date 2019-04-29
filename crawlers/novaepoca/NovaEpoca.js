@@ -29,6 +29,14 @@ class NovaEpoca extends GenericExtractor{
 
     }
 
+    async getMainInfo(html){
+
+    }
+
+    async getPropertyDetails(html){
+        
+    }
+
 }
 
 module.exports = NovaEpoca;
