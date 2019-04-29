@@ -2,11 +2,11 @@ const GenericExtractor = require('../GenericExtractor');
 
 class NovaEpoca extends GenericExtractor{
     
-    constructor(params, request){
-        super(params, request);
+    constructor(params, request, cheerio){
+        super(params, request, cheerio);
     }
 
-    extract(){
+    async extract(){
 
         if(!this.params.location || !this.params.purpose) throw new Error(`purpose and location are expected.`);
 
@@ -20,7 +20,12 @@ class NovaEpoca extends GenericExtractor{
                     AreaMin=0&
                     AreaMax=6.000+`;
 
-        this.request.get(url, res => console.log(res));
+        const options = {
+            url: url
+        };
+        const html = await this.request.req(options);
+        const $ = this.cheerio.load(html);
+        console.log($);
 
     }
 

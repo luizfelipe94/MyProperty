@@ -1,4 +1,9 @@
 (async () => {
+
+    process.env.https_proxy = "http://127.0.0.1:8888";
+    process.env.http_proxy = "http://127.0.0.1:8888";
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+
     console.log("testing request class.");
     const Request = require('../helper/request');
 
@@ -22,6 +27,6 @@
         "cookie3": "cookie3-abc-def",
     }
 
-    // testCookies(cookies);
+    testCookies(cookies);
 })();
 
