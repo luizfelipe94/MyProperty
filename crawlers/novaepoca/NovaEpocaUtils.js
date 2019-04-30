@@ -32,7 +32,6 @@ class NovaEpocaUtils {
     }
 
     static async getBeighborhood(condition){
-        // if(condition) throw new Error(`Condition required!`);
         const result = Beighborhood.findOne(condition)
         .then(resp => resp )
         .catch(err => err);
