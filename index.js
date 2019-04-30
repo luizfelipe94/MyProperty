@@ -16,8 +16,11 @@ async function main(){
         app.use(`/api/${version}`, routes);
         require('./lib/mongo');
 
+        await require('./crawlers/novaepoca/index')();
+
         //routes
         require('./routes/main')(routes);
+        require('./routes/novaepoca')(routes);
 
         const PORT = process.env.API_PORT || 3000;
         app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

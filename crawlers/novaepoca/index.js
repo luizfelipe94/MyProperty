@@ -1,19 +1,20 @@
 const Main = async () => {
-    const NovaEpoca = require('../novaepoca/NovaEpoca');
+
+    const NovaEpoca = require('./NovaEpoca');
+    const NEUtils = require('./NovaEpocaUtils');
+
+    console.log(`SCRIPT BEING STARTED!!!`);
+
     const params = {
-        url: url,
-        purpose: "prontos",
-        locations: "Meier"
+        location: "Meier",
+        purpose: "prontos"
     };
-    const url = `https://www.novaepoca.com.br/prontos/?
-                    finalidade=${purpose}&
-                    localizacao=${location}&
-                    ValorMin=0&
-                    ValorMax=5.000.000+&
-                    AreaMin=0&
-                    AreaMax=6.000+`;
-    const ne = new NovaEpoca(params);
-    await ne.extract();
+
+    const NE = new NovaEpoca(params);
+    await NE.main();
+
 }
+
+module.exports = Main;
 
 (async () => await Main() )();

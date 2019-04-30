@@ -1,5 +1,7 @@
+const NEUtils = require('../crawlers/novaepoca/NovaEpocaUtils');
+
 module.exports = app => {
-    app.get('/teste', (req, res) => {
+    app.get('/', async (req, res) =>  {
         res.send("Everythings works!");
     });
 }
