@@ -9,7 +9,7 @@
 
     // teste requests 
     const options = {
-        url: "https://www.novaepoca.com.br/prontos/?finalidade=prontos&localizacao=Meier&ValorMin=0&ValorMax=5.000.000%2B&AreaMin=0&AreaMax=6.000%2B",
+        url: "https://www.google.com.br",
         method: "get"
     };
 

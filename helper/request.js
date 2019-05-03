@@ -1,12 +1,23 @@
 const rp = require('request-promise');
 var tough = require('tough-cookie');
+const cheerio = require('cheerio');
 
 class Request {
-    constructor(){
+    constructor(options){
+        const defaultOptions = {
+            rateLimit: 1000,
+            timeOut: 10000
+        };
 
+        this.options = Object.assign(options, defaultOptions);
+    }
+
+    static async loadHtml(html){
+        return cheerio.load(html); 
     }
 
     static async req(options){
+        // console.log(this.options);
         if(!options.url) throw new Error("Necessario passar a url.");
         if(!options.method) options.method = "get";
         const result = rp(options)
