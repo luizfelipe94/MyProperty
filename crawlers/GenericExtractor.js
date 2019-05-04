@@ -19,10 +19,6 @@ class GenericExtractor {
 
     async resumeTotalPages(total, perPage){
         const mod = total % perPage;
-        console.log(`Total items.: ${total}`);
-        console.log(`Total pages.: ${Math.ceil(total / perPage)}`);
-        console.log(`Total per page.: ${perPage}`);
-        console.log(`Total last page.: ${mod}`);
         return {
             totalPages: Math.ceil(total / perPage),
             totalLastPage: mod,

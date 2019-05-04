@@ -22,24 +22,28 @@ class NovaEpoca extends GenericExtractor{
         
         const { totalPages } = await this.getTotalPages(initialUrl);
 
+        // percorre as paginas
         for (let i = 1; i <= 1; i++) {
             console.log(`Starting scraper for page ${i}`);
-            await this.delay(1000);
+            await this.delay(3000);
             const url = `https://www.novaepoca.com.br/filtros/imovel/${purpose}/${i}?bairro=${idBeighborhood}&pagina=2&ValorMin=0&ValorMax=5.000.000%2B&AreaMin=0&AreaMax=6.000%2B`;    
             const options = {
                 url: url
             };
             const $ = await this.request.loadHtml(await this.request.req(options));
-
             const listResults = $(".resulto_col1");
-            for (let i = 0; i < 1; i++) {
+            
+            // percorre os itens da pagina
+            for (let i = 0; i < listResults.length; i++) {
                 const data = {};
-                // data.mainInfo = await this.getMainInfo($);
-
                 // resulto_col1
-                data.urlImgs = await this.getUrlImgs(listResults.eq(i));      
+                // data.mainInfo = await this.getMainInfo(listResults.eq(i));
+                // data.imgs = await this.getUrlImgsFromMainInfo(listResults.eq(i));
+                // console.log(JSON.stringify(data, null, 4));     
             }
         }
+
+        await this.getDetails("https://www.novaepoca.com.br/prontos/apartamento-meier-2-quartos/33479");
     }
 
     async getTotalPages(initialUrl){
@@ -55,23 +59,35 @@ class NovaEpoca extends GenericExtractor{
         return resumeTotal;
     }
 
-    async getMainInfo($){
-        console.log("================================================ Extracting Main Info ================================================");
-        const mainInfos = $(".resulto_col1_rit");
-        for (let i = 0; i < mainInfos.length; i++) {
-            const mainInfo = mainInfos.eq(i);
-            const title = mainInfo.find("a > h2").text().trim();
-            console.log(title);         
-        }
+    async getMainInfo(listItem){
+        const mainInfo = {};
+        mainInfo.title = listItem.find(".resulto_col1_rit > a > h2").text();
+        mainInfo.local = listItem.find(".resulto_col1_rit > h4").text();
+        mainInfo.shortDescription = listItem.find(".resulto_col1_rit > p").text();
+        mainInfo.url = listItem.find(".resulto_col1_rit > .resulto_item_btn > a").attr("href");
+        return mainInfo;
     }
 
-    async getUrlImgs(listResult){
-        console.log("================================================ Extracting Images Url's ================================================");
-        const list = listResult.find(".resulto_col1_lft > .flexslider > ul > li");
+    async getUrlImgsFromMainInfo(listItem){
+        const list = listItem.find(".resulto_col1_lft > .flexslider > ul > li");
+        let urls = [];
         for (let i = 0; i < list.length; i++) {
-            const li = list.eq(i);
-            console.log(li.html());            
+            const li = await list.eq(i);       
+            const reg = /(http|https):\/\/[a-z]+.[a-z]+.[a-z]+.[a-z]+\/[a-z]+\/[0-9]+.[a-z]+\?[a-z]+\=[0-9]\&[a-z]+\;[a-z]\=[0-9]/gm;
+            urls.push(li.html().match(reg)[0]);
         }
+        return urls;
+    }
+
+    async getDetails(url){
+        await this.delay(4000);
+        const options = {
+            url: url
+        };
+        const $ = await this.request.loadHtml(await this.request.req(options));
+        const mainDiv = await $(".prd_detal_sec");
+        const teste = await mainDiv.find(".col-md-8 col-sm-12 cont_left");
+        console.log(teste.html());
     }
 }
 
