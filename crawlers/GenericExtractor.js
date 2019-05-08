@@ -1,5 +1,6 @@
 const request = require('../helper/request');
 const cheerio = require('cheerio');
+const delay = require('../helper/delay');
 
 class GenericExtractor {
 
