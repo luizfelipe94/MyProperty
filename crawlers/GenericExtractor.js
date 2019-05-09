@@ -1,6 +1,7 @@
 const request = require('../helper/request');
 const cheerio = require('cheerio');
 const delay = require('../helper/delay');
+const Property = require('../models/property');
 
 class GenericExtractor {
 
@@ -10,14 +11,6 @@ class GenericExtractor {
         this.cheerio = cheerio;
     }
 
-    async getMainInfo(html){
-
-    }
-
-    async getPropertyDetails(html){
-        
-    }
-
     async resumeTotalPages(total, perPage){
         const mod = total % perPage;
         return {
@@ -25,6 +18,19 @@ class GenericExtractor {
             totalLastPage: mod,
             totalPerPage: perPage
         }
+    }
+
+    async saveProperty(data){
+        if(!Array.isArray(data)) throw new Error("Array are expected. ");
+        if(data.length < 1) throw new Error("Necessary one or more documents to be saved. ");
+        return new Promise((resolve, reject) => {
+            Property.insertMany(data, function(err, docs) {
+                // if(err) throw new Error("An error ocurred when saving documents to mongodb. ");
+                // console.log(`${data.length} documents saved in database.`);
+                if(err) reject(err);
+                resolve(docs);
+            });
+        });
     }
 
     async delay(time){

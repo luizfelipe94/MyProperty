@@ -20,6 +20,7 @@ const PropertyDetails = new mongoose.Schema({
     price: { type: Number },
     IPTU: { type: Number },
     condominium: { type: Number },
+    imgs: { type: Array }
 });
 
 const PropertySchema = new mongoose.Schema({
@@ -45,9 +46,8 @@ PropertySchema.pre('save', function(next){
 });
 
 PropertySchema.methods.compareHash = function(mainInfo, cb){
-    const comparator = JSON.stringify(mainInfo);
-    const toCompare = JSON.stringify(this.mainInfo);
-    bcrypt.compare(comparator, toCompare, function(err, isMatch){
+    const mainInfo = JSON.stringify(mainInfo);
+    bcrypt.compare(mainInfo, this.hash, function(err, isMatch){
         if(err) return cb(err);
         cb(null, isMatch);
     });
