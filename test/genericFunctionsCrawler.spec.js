@@ -5,9 +5,10 @@ const assert = require('assert');
 const Property = require('../models/property');
 const faker = require('faker');
 const conn = require('../lib/mongo');
+const GenericExtractor = require('../crawlers/GenericExtractor');
 
 describe("Generic tests for all crawlers.",function(){
-    it("Saving properties to mongodb", done => {
+    it("Saving properties to mongodb manually", done => {
         var props = [];
         const totalDocs = 10;
         for(i=0; i<=totalDocs; i++){
@@ -61,4 +62,8 @@ describe("Generic tests for all crawlers.",function(){
             });
         });
     });
+
+    it("Saving properties to mongodb with save function in generic extractor", done => {
+
+    })
 });
