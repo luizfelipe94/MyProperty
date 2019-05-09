@@ -21,15 +21,13 @@ class GenericExtractor {
         }
     }
 
-    async saveProperty(data){
+    static async saveProperties(data){
         if(!Array.isArray(data)) throw new Error("Array are expected. ");
         if(data.length < 1) throw new Error("Necessary one or more documents to be saved. ");
         return new Promise((resolve, reject) => {
-            conn.once('open', function(){
-                Property.insertMany(data, function(err, docs){
-                    if(err) reject(err);
-                    resolve(docs);
-                });
+            Property.insertMany(data, function(err, docs){
+                if(err) reject(err);
+                resolve(docs);
             });
         });
     }
