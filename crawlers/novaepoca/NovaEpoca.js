@@ -22,46 +22,54 @@ class NovaEpoca extends GenericExtractor{
         
         const { totalPages } = await this.getTotalPages(initialUrl);
 
-        // percorre as paginas
-        for (let i = 1; i <= 1; i++) {
+        console.log(`Total pages ${totalPages} for beighborhood ${beighborhood} and purpose ${purpose}`);
 
-            console.log(`Starting scraper for page ${i}`);
+        // percorre as paginas e pega todos as propriedades (somente a capa, pre visualização).
 
-            await this.delay(3000);
-            const url = `https://www.novaepoca.com.br/filtros/imovel/${purpose}/${i}?bairro=${idBeighborhood}&pagina=2&ValorMin=0&ValorMax=5.000.000%2B&AreaMin=0&AreaMax=6.000%2B`;    
-            const options = {
-                url: url
-            };
-            const $ = await this.request.loadHtml(await this.request.req(options));
-            const listResults = $(".resulto_col1");
-            
-            // percorre os itens da pagina
-            var dataPerPage = [];
-            for (let i = 0; i < listResults.length; i++) {
-                const data = {};
-                // resulto_col1
-                data.mainInfo = await this.getMainInfo(listResults.eq(i));
-                data.mainInfo.imgs = await this.getUrlImgsFromMainInfo(listResults.eq(i));
+        this.getMainInfoPropeties(totalPages, purpose, idBeighborhood)
+        .then(res => {
+            console.log(JSON.stringify(res, null, 4))
+        })
+        .catch(err => {
+            console.log("A error ocurred" + err);
+        });
+        
+    }
 
-                // por enquanto irá salvar todos. mas depois será implementado o upsert
-                const PropertySchema = {
-                    mainInfo: data
+    async getMainInfoPropeties(totalPages, purpose, idBeighborhood){
+        return new Promise(async (resolve, reject) => {
+            try{
+                const results = [];
+                for (let i = 1; i <= 1; i++) {
+                    console.log(`Starting scraper for page ${i}`);
+                    await this.delay(3000);
+                    const url = `https://www.novaepoca.com.br/filtros/imovel/${purpose}/${i}?bairro=${idBeighborhood}&pagina=2&ValorMin=0&ValorMax=5.000.000%2B&AreaMin=0&AreaMax=6.000%2B`;    
+                    const options = {
+                        url: url
+                    };
+                    const $ = await this.request.loadHtml(await this.request.req(options));
+                    const listResults = $(".resulto_col1");
+                    
+                    // percorre os itens da pagina
+                    for (let i = 0; i < listResults.length; i++) {
+                        const data = {};
+                        // resulto_col1
+                        data.mainInfo = await this.getMainInfo(listResults.eq(i));
+                        data.mainInfo.imgs = await this.getUrlImgsFromMainInfo(listResults.eq(i));
+    
+                        // por enquanto irá salvar todos. mas depois será implementado o upsert
+                        const PropertySchema = {
+                            mainInfo: data
+                        }
+                        results.push(PropertySchema);
+                    }
                 }
-                // console.log(JSON.stringify(PropertySchema, null, 4));
-                dataPerPage.push(PropertySchema);
-
-                // const property = new Prop(PropertySchema);
-                // property.save(function(err){
-                //     if(err) throw err;
-                //     console.log("saved!");
-                // });
+                resolve(results);
+            }catch(e){
+                console.log(e);
+                reject(e);
             }
-            console.log(JSON.stringify(dataPerPage, null, 4));
-            Prop.insertMany(dataPerPage, function(err){
-                if(err) throw err;
-                console.log("dados salvos.");
-            });
-        }
+        });
     }
 
     async getTotalPages(initialUrl){
