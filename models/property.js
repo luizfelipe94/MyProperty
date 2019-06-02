@@ -6,7 +6,8 @@ const MainInfo = new mongoose.Schema({
     location: { type: String, required: false },
     shortDescription: { type: String, default: "No description." },
     url: { type: String, required: false },
-    imgs: { type: Array }
+    imgs: { type: Array },
+    dtRegister: { type: Date, required: true, default: Date.now() }
 });
 
 const PropertyDetails = new mongoose.Schema({

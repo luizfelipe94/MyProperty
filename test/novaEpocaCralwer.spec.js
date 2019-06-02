@@ -1,10 +1,11 @@
 const NovaEpoca = require('../crawlers/novaepoca/NovaEpoca');
 const NEUtils = require('../crawlers/novaepoca/NovaEpocaUtils');
 const assert = require('assert');
+const expect = require('chai').expect
 
 describe("Tests Nova Epoca Scrapper.", () => {
 
-    it("Test main function", async (done) => {
+    it("Test main function", async () => {
 
         // main function execute full scrapper execution
         console.log("Script being started.");
@@ -15,8 +16,19 @@ describe("Tests Nova Epoca Scrapper.", () => {
             purpose: "prontos"
         };
         const NE = new NovaEpoca(params);
-        await NE.main();
-        done();
+        const inserted = await NE.getMainInfoPropeties();
+        expect(inserted).to.be.true;
+    });
 
+    it("Get total pages and check if is greater than 0", async () => {
+        const params = {
+            location: "Meier",
+            purpose: "prontos"
+        };
+        const NE = new NovaEpoca(params);
+        const totalResume = await NE.getTotalPages();
+        console.log(`${totalResume.totalPages} pages.`);
+        expect(totalResume.totalPages).to.be.a('number');
+        expect(totalResume.totalPages).greaterThan(0);
     });
 });

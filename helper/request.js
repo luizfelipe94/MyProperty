@@ -1,6 +1,7 @@
 const rp = require('request-promise');
 var tough = require('tough-cookie');
 const cheerio = require('cheerio');
+const delay = require('../helper/delay');
 
 class Request {
     constructor(options){
@@ -17,7 +18,8 @@ class Request {
     }
 
     static async req(options){
-        // console.log(this.options);
+        if(!options.delay) options.delay = 0;
+        if(options.delay > 0) await delay(options.delay);
         if(!options.url) throw new Error("Necessario passar a url.");
         if(!options.method) options.method = "get";
         const result = rp(options)

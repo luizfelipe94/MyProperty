@@ -4,7 +4,7 @@
   "description": "Property crawler",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --timeout 10000",
+    "test": "mocha --timeout 300000",
     "dev": "nodemon index.js",
     "prod": "pm2 index.js"
   },
@@ -29,6 +29,7 @@
   "devDependencies": {
     "assert": "^1.5.0",
     "chai": "^4.2.0",
+    "expect": "^24.8.0",
     "faker": "^4.1.0",
     "mocha": "^6.1.4",
     "nodemon": "^1.18.11",

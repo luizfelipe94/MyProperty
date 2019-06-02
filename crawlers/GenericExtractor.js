@@ -24,18 +24,14 @@ class GenericExtractor {
     static async saveProperties(data){
         if(!Array.isArray(data)) throw new Error("Array are expected. ");
         if(data.length < 1) throw new Error("Necessary one or more documents to be saved. ");
-        return new Promise((resolve, reject) => {
-            Property.insertMany(data, function(err, docs){
-                if(err) reject(err);
-                resolve(docs);
+        try{
+            await Property.insertMany(data, function(err, docs){
+                if(err) throw err;
             });
-        });
+        }catch(e){
+            throw e;
+        }
     }
-
-    async delay(time){
-        return new Promise(resolve => setTimeout(resolve, time));
-    }
-    
 }
 
 module.exports = GenericExtractor;
