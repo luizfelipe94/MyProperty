@@ -1,6 +1,7 @@
 const GenericExtractor = require('../GenericExtractor');
 const NEUtils = require('./NovaEpocaUtils');
 const config = require('./novaepoca-config');
+const Property = require('../../models/property');
 
 class NovaEpoca extends GenericExtractor{
     
@@ -9,27 +10,25 @@ class NovaEpoca extends GenericExtractor{
     }
 
     async main(){
-        // testing
-        const results = await this.getMainInfoPropeties();
-        console.log(JSON.stringify(results, null, 4));
+
     }
 
+    // scrolls through all pages for the purpose and beighborhood
     async getMainInfoPropeties(){
         if(!this.params.location || !this.params.purpose) throw new Error(`purpose and location are expected.`);
         console.log(`Delay time for pagination: ${config.delays.pagination}.`);
         const result = await NEUtils.getBeighborhood({value: this.params.location});
         const idBeighborhood = result.id; 
-        console.log(`Search params: \n location: ${this.params.location}. \n purpose: ${this.params.purpose}.`);
-        await GenericExtractor.log()
+        console.log(`Search params:   \n location: ${this.params.location}.   \n purpose: ${this.params.purpose}.   \n type: ${NEUtils.getPropertyType(this.params.type)}`);
         try{
             const totalPages = await this.getTotalPages();
             console.log(`Total pages: ${totalPages.totalPages}`);
             if(totalPages.totalPages <= 0) throw new Error("0 pages to scraping.");
             
-            // scrolls through all pages for the purpose and beighborhood
             for (let i = 1; i <= totalPages.totalPages; i++) {
-                console.log(`Starting scraper for page ${i}`);
-                const url = `https://www.novaepoca.com.br/filtros/imovel/${this.params.purpose}/${i}?bairro=${idBeighborhood}&pagina=2&ValorMin=0&ValorMax=5.000.000%2B&AreaMin=0&AreaMax=6.000%2B`;    
+                console.log(`Starting scraper for page ${i}`);let url = `https://www.novaepoca.com.br/${this.params.purpose}/?bairro=${idBeighborhood}&pagina=${i}&Tipos[]=${this.params.type}&ValorMin=0&ValorMax=5.000.000+&AreaMin=0&AreaMax=6.000+&`;
+                if(!this.params.type) url = `https://www.novaepoca.com.br/${this.params.purpose}/?bairro=${idBeighborhood}&pagina=${i}&ValorMin=0&ValorMax=5.000.000+&AreaMin=0&AreaMax=6.000+&`;
+                
                 const options = {
                     url: url,
                     delay: config.delays.pagination
@@ -51,7 +50,7 @@ class NovaEpoca extends GenericExtractor{
                     const PropertyMainInfoSchema = data;
                     resultsPerPage.push(PropertyMainInfoSchema);
                 }
-                await GenericExtractor.saveProperties(resultsPerPage)
+                await GenericExtractor.saveMainInfoMProperties(resultsPerPage);
             }
             return true;
         }catch(e){
@@ -62,7 +61,8 @@ class NovaEpoca extends GenericExtractor{
     async getTotalPages(){
         const result = await NEUtils.getBeighborhood({value: this.params.location});
         const idBeighborhood = result.id;  
-        const url = `https://www.novaepoca.com.br/prontos/?finalidade=${this.params.purpose}&bairro=${idBeighborhood}&localizacao=Meier&ValorMin=0&ValorMax=5.000.000%2B&AreaMin=0&AreaMax=6.000%2B`;      
+        // const url = `https://www.novaepoca.com.br/prontos/?finalidade=${this.params.purpose}&bairro=${idBeighborhood}&localizacao=Meier&ValorMin=0&ValorMax=5.000.000%2B&AreaMin=0&AreaMax=6.000%2B`;
+        const url = `https://www.novaepoca.com.br/prontos/?finalidade=${this.params.purpose}&Tipos=${this.params.type}&bairro=${idBeighborhood}&localizacao=Meier&ValorMin=0&ValorMax=5.000.000%2B&AreaMin=0&AreaMax=6.000%2B`;
         const options = { url: url };
         const html = await this.request.req(options);
         const $ = this.cheerio.load(html);
@@ -79,7 +79,12 @@ class NovaEpoca extends GenericExtractor{
         mainInfo.location = listItem.find(".resulto_col1_rit > h4").text();
         mainInfo.shortDescription = listItem.find(".resulto_col1_rit > p").text();
         mainInfo.url = listItem.find(".resulto_col1_rit > .resulto_item_btn > a").attr("href");
+        mainInfo.type = NEUtils.getPropertyType(this.params.type);
         return mainInfo;
+    }
+
+    formatUrl(){
+
     }
 
     async getUrlImgsFromMainInfo(listItem){
@@ -93,13 +98,13 @@ class NovaEpoca extends GenericExtractor{
         return urls;
     }
 
-    // async getDetails(url){
-    //     const options = { url: url };
-    //     const $ = await this.request.loadHtml(await this.request.req(options));
-    //     const mainDiv = await $(".prd_detal_sec");
-    //     const teste = await mainDiv.find(".col-md-8 col-sm-12 cont_left");
-    //     console.log(teste.html());
-    // }
+    async extractPropertyDetails(url){
+        // acomodation, bedrooms, bathrooms, userfulArea, livingRoom, description, locationDetails, 
+        // price, IPTU, condominium, imgs, type
+        const options = {url: url};
+        const $ = await this.request.loadHtml(await this.request.req(options));
+        
+    }
 
 }
 

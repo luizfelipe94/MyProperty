@@ -2,7 +2,7 @@ const request = require('../helper/request');
 const cheerio = require('cheerio');
 const delay = require('../helper/delay');
 const Property = require('../models/property');
-const conn = require('../lib/mongo');
+const typesPattern = require('../helper/propertySalesTypePatterns');
 
 class GenericExtractor {
 
@@ -21,7 +21,7 @@ class GenericExtractor {
         }
     }
 
-    static async saveProperties(data){
+    static async saveMainInfoMProperties(data){
         if(!Array.isArray(data)) throw new Error("Array are expected. ");
         if(data.length < 1) throw new Error("Necessary one or more documents to be saved. ");
         try{
@@ -32,6 +32,37 @@ class GenericExtractor {
             throw e;
         }
     }
+
+    async getUrlsToExtract(conditions){
+        if(!conditions){
+            conditions = {
+                isActive: true
+            };
+        }
+        const query = Property.find(conditions, 'mainInfo.url');
+        const promise = query.exec();
+        return new Promise((resolve, reject) => {
+            promise.then(res => {
+                const urls = res.map(el =>  el.mainInfo.url);
+                resolve(urls);
+            });
+        });
+    }
+
+    static checkPropertySalesType(text){
+        if(typesPattern.sale.includes(text)){
+            return "sale";
+        }else if(typesPattern.rental.includes(text)){
+            return "rental";
+        }else{
+            throw new Error(`Could not set a type for ${text}`);
+        }
+    }
+
+    static async saveProperty(){
+
+    }
+
 }
 
 module.exports = GenericExtractor;

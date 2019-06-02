@@ -7,6 +7,7 @@ const MainInfo = new mongoose.Schema({
     shortDescription: { type: String, default: "No description." },
     url: { type: String, required: false },
     imgs: { type: Array },
+    type: { type: String },
     dtRegister: { type: Date, required: true, default: Date.now() }
 });
 
@@ -21,7 +22,8 @@ const PropertyDetails = new mongoose.Schema({
     price: { type: Number },
     IPTU: { type: Number },
     condominium: { type: Number },
-    imgs: { type: Array }
+    imgs: { type: Array },
+    type: { type: String, enum: ['venda', 'aluguel'] }
 });
 
 const PropertySchema = new mongoose.Schema({

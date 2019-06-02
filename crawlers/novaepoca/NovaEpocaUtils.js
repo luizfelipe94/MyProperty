@@ -37,6 +37,43 @@ class NovaEpocaUtils {
         .catch(err => err);
         return result;
     }
+
+    static getPropertyType(id){
+        switch(id){
+            case 1:
+            return "casa";
+            case 2:
+            return "apartamento";
+            case 3:
+            return "terreno";
+            case 4:
+            return "sala";
+            case 5:
+            return "cobertura";
+            case 7:
+            return "flet";
+            case 8:
+            return "apart-hotel";
+            case 9:
+            return "loja";
+            case 10:
+            return "conjugado";
+            case 11:
+            return "galpão";
+            case 12:
+            return "sobreloja";
+            case 13:
+            return "prédio";
+            case 14:
+            return "sítio";
+            case 15:
+            return "andar";
+            case 16:
+            return "fazenda";
+            case 17:
+            return "kitnet";
+        }
+    }
 }
 
 module.exports = NovaEpocaUtils;
