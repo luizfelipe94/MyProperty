@@ -83,10 +83,6 @@ class NovaEpoca extends GenericExtractor{
         return mainInfo;
     }
 
-    formatUrl(){
-
-    }
-
     async getUrlImgsFromMainInfo(listItem){
         const list = listItem.find(".resulto_col1_lft > .flexslider > ul > li");
         let urls = [];
@@ -99,11 +95,43 @@ class NovaEpoca extends GenericExtractor{
     }
 
     async extractPropertyDetails(url){
-        // acomodation, bedrooms, bathrooms, userfulArea, livingRoom, description, locationDetails, 
+        // title, acomodation, bedrooms, bathrooms, userfulArea, livingRoom, description, locationDetails, 
         // price, IPTU, condominium, imgs, type
+        const propertyDetails = {};
         const options = {url: url};
         const $ = await this.request.loadHtml(await this.request.req(options));
-        
+        const content = $(".prd_detal_sec > .container > .row > .col-sm-12 > .prd_detal_Inn > .prd_detl_top_menu_L3 > .grey_Prt > .row > .cont_left");
+        propertyDetails.title = content.find(".top_body_L3 > .top_body_L3_lft > h1").text();
+        propertyDetails.price = content.find(".top_body_L3 > .top_rt_l3_main > .produto_l3_rt > ul > li > b").text();
+        propertyDetails.type = GenericExtractor.checkPropertySalesType(content.find(".top_body_L3 > .top_rt_l3_main > .produto_l3_rt > ul > li > strong").text());
+               
+        const iptucondominium = [];
+        content.find(".top_body_L3 > .top_rt_l3_main > .produto_l3_rt2 > ul > li").each((i, el) => {
+            iptucondominium.push($(el).find("strong").text().match(/([0-9]*\.[0-9]+|[0-9]+)/)[0]);
+        });
+        propertyDetails.IPTU = iptucondominium[0];
+        propertyDetails.condominium = iptucondominium[1];
+
+        const content_secRow = content.find(".content_secRow");
+        const contents_secRowArray = [];
+        content_secRow.each((i, el) => contents_secRowArray.push(el));
+
+        propertyDetails.description = $(contents_secRowArray[0]).find("p").text();
+        propertyDetails.locationDetails = this.formatAddress($(contents_secRowArray[1]).find("p"));
+
+        console.log(JSON.stringify(propertyDetails, null, 4));
+
+        return propertyDetails;
+    }
+
+    formatAddress(addressSelector){
+        const strongs = addressSelector.find("strong");
+        if(strongs.length < 2) throw new Error("Default are 3 tags strong. Adjust if the pattern changes.");
+        const strongsArray = [];
+        strongs.each((i, el) => strongsArray.push(el));
+        const street = this.cheerio.load(strongsArray[0]); 
+        const city = this.cheerio.load(strongsArray[2]); 
+        return `${street.text()}, ${city.text()}`;
     }
 
 }

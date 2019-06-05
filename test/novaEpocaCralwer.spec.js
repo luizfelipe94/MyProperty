@@ -5,60 +5,61 @@ const expect = require('chai').expect
 
 describe("Tests Nova Epoca Scrapper.", () => {
 
-    it("Test main function", async () => {
-        // main function execute full scrapper execution
-        console.log("Script being started.");
+    const params = {
+        location: "Meier",
+        purpose: "prontos"
+    };
 
-        // the main function expects the neighborhood and the type of commercialization (purpose) to execute
-        const params = {
-            location: "Meier",
-            purpose: "prontos",
-            type: 1
-        };
-        const NE = new NovaEpoca(params);
-        const inserted = await NE.getMainInfoPropeties();
-        expect(inserted).to.be.true;
-    });
+    // it("Test main function", async () => {
+    //     // main function execute full scrapper execution
+    //     console.log("Script being started.");
 
-    it("Get total pages and check if is greater than 0", async () => {
-        const params = {
-            location: "Meier",
-            purpose: "prontos",
-            type: 1
-        };
-        const NE = new NovaEpoca(params);
-        const totalResume = await NE.getTotalPages();
-        // console.log(`${totalResume.totalPages} pages.`);
-        expect(totalResume.totalPages).to.be.a('number');
-        expect(totalResume.totalPages).greaterThan(0);
-    });
+    //     // the main function expects the neighborhood and the type of commercialization (purpose) to execute
+    //     const params = {
+    //         location: "Meier",
+    //         purpose: "prontos",
+    //         type: 1
+    //     };
+    //     const NE = new NovaEpoca(params);
+    //     const inserted = await NE.getMainInfoPropeties();
+    //     expect(inserted).to.be.true;
+    // });
+
+    // it("Get total pages and check if is greater than 0", async () => {
+    //     const params = {
+    //         location: "Meier",
+    //         purpose: "prontos",
+    //         type: 1
+    //     };
+    //     const NE = new NovaEpoca(params);
+    //     const totalResume = await NE.getTotalPages();
+    //     // console.log(`${totalResume.totalPages} pages.`);
+    //     expect(totalResume.totalPages).to.be.a('number');
+    //     expect(totalResume.totalPages).greaterThan(0);
+    // });
 
     // check if total cities in json from website is the same stored.
 
     // check beighborhoods in json from website is the same stored.
 
-    it("Get urls to extract property data.", async () => {
-        const params = {
-            location: "Meier",
-            purpose: "prontos"
-        };
-        const NE = new NovaEpoca(params);
-        const urls = await NE.getUrlsToExtract();
-        // console.log(`${urls.length} urls to be extracted property data.`);
-        expect(urls).to.be.a('array');
-    });
+    // it("Pick up data needed for extraction.", async () => {
+    //     const NE = new NovaEpoca(params);
+    //     const urls = await NE.getDataToExtract();
+    //     console.log(`${urls.length} urls to be extracted property data.`);
+    //     expect(urls).to.be.a('array');
+    // });
 
-    it("Define a property sales type (sale or rental).", async () => {
-        const text = "Valor aluguel";
-        const type = NovaEpoca.checkPropertySalesType(text);
-        // console.log(`type: ${type}`);
-        expect(type).to.be.a('string');
-    });
+    // it("Define a property sales type (sale or rental).", async () => {
+    //     const text = "Valor aluguel";
+    //     const type = NovaEpoca.checkPropertySalesType(text);
+    //     // console.log(`type: ${type}`);
+    //     expect(type).to.be.a('string');
+    // });
 
     it("Extract data from url property", async () => {
         const url = "https://www.novaepoca.com.br/prontos/apartamento-meier-3-quartos/13076";
         const NE = new NovaEpoca();
-        const urls = await NE.extractPropertyDetails(url);
+        const result = await NE.extractPropertyDetails(url);
     });
 
 });

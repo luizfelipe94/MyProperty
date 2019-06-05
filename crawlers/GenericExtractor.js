@@ -33,17 +33,18 @@ class GenericExtractor {
         }
     }
 
-    async getUrlsToExtract(conditions){
+    async getDataToExtract(conditions){
         if(!conditions){
             conditions = {
-                isActive: true
+                isActive: true,
+                propertyDetails: null
             };
         }
-        const query = Property.find(conditions, 'mainInfo.url');
+        const query = Property.find(conditions, 'mainInfo');
         const promise = query.exec();
         return new Promise((resolve, reject) => {
             promise.then(res => {
-                const urls = res.map(el =>  el.mainInfo.url);
+                const urls = res.map(el =>  el.mainInfo);
                 resolve(urls);
             });
         });

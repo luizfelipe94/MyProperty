@@ -12,6 +12,7 @@ const MainInfo = new mongoose.Schema({
 });
 
 const PropertyDetails = new mongoose.Schema({
+    title: { type: String },
     acomodation: { type: Number },
     bedrooms: { type: Number },
     bathrooms: { type: Number },
@@ -23,16 +24,18 @@ const PropertyDetails = new mongoose.Schema({
     IPTU: { type: Number },
     condominium: { type: Number },
     imgs: { type: Array },
-    type: { type: String, enum: ['venda', 'aluguel'] }
+    type: { type: String, enum: ['venda', 'aluguel'] },
+    dtRegister: { type: Date, required: true, default: Date.now() }
 });
 
 const PropertySchema = new mongoose.Schema({
     mainInfo: MainInfo,
     propertyDetails: PropertyDetails,
-    hash: { type: String },
-    isActive: { type: Boolean, default: true },
-    dtRegister: { type: Date, default: Date.now() },
-    dtUpdated: { type: Date }
+    hash: { type: String }, // soon required true
+    isActive: { type: Boolean, required: true, default: true },
+    dtRegister: { type: Date, required: true, default: Date.now() },
+    dtUpdated: { type: Date },
+    version: { type: Number, required: true, default: 0, min: 0 }
 });
 
 PropertySchema.pre('save', function(next){
