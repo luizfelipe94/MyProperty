@@ -7,7 +7,8 @@ const Main = async () => {
 
     const params = {
         location: "Meier",
-        purpose: "prontos"
+        purpose: "prontos",
+        type: 1
     };
 
     const NE = new NovaEpoca(params);

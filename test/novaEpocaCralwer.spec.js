@@ -7,7 +7,8 @@ describe("Tests Nova Epoca Scrapper.", () => {
 
     const params = {
         location: "Meier",
-        purpose: "prontos"
+        purpose: "prontos",
+        type: 1
     };
 
     // it("Test main function", async () => {

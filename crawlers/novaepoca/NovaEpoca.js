@@ -1,7 +1,6 @@
 const GenericExtractor = require('../GenericExtractor');
 const NEUtils = require('./NovaEpocaUtils');
 const config = require('./novaepoca-config');
-const Property = require('../../models/property');
 
 class NovaEpoca extends GenericExtractor{
     
@@ -109,6 +108,7 @@ class NovaEpoca extends GenericExtractor{
         content.find(".top_body_L3 > .top_rt_l3_main > .produto_l3_rt2 > ul > li").each((i, el) => {
             iptucondominium.push($(el).find("strong").text().match(/([0-9]*\.[0-9]+|[0-9]+)/)[0]);
         });
+        if(strongs.length < 1) throw new Error("Default are 2 tags strong. Adjust if the pattern changes.");
         propertyDetails.IPTU = iptucondominium[0];
         propertyDetails.condominium = iptucondominium[1];
 
