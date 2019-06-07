@@ -13,18 +13,19 @@ const MainInfo = new mongoose.Schema({
 
 const PropertyDetails = new mongoose.Schema({
     title: { type: String },
-    acomodation: { type: Number },
-    bedrooms: { type: Number },
-    bathrooms: { type: Number },
-    userfulArea: { type: Number },
-    livingRoom: { type: Number },
+    acomodations: { type: String },
+    bedrooms: { type: String },
+    bathrooms: { type: String },
+    userfulArea: { type: String },
+    livingRoom: { type: String },
     description: { type: String },
     locationDetails: { type: String },
-    price: { type: Number },
-    IPTU: { type: Number },
-    condominium: { type: Number },
+    price: { type: String },
+    IPTU: { type: String },
+    condominium: { type: String },
     imgs: { type: Array },
     type: { type: String, enum: ['venda', 'aluguel'] },
+    others: { type: String },
     dtRegister: { type: Date, required: true, default: Date.now() }
 });
 

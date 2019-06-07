@@ -94,22 +94,26 @@ class NovaEpoca extends GenericExtractor{
     }
 
     async extractPropertyDetails(url){
-        // title, acomodation, bedrooms, bathrooms, userfulArea, livingRoom, description, locationDetails, 
-        // price, IPTU, condominium, imgs, type
+        // acomodation,  bathrooms, 
         const propertyDetails = {};
         const options = {url: url};
-        const $ = await this.request.loadHtml(await this.request.req(options));
+        const html = await this.request.req(options);
+        const $ = await this.request.loadHtml(html);
         const content = $(".prd_detal_sec > .container > .row > .col-sm-12 > .prd_detal_Inn > .prd_detl_top_menu_L3 > .grey_Prt > .row > .cont_left");
-        propertyDetails.title = content.find(".top_body_L3 > .top_body_L3_lft > h1").text();
-        propertyDetails.price = content.find(".top_body_L3 > .top_rt_l3_main > .produto_l3_rt > ul > li > b").text();
-        propertyDetails.type = GenericExtractor.checkPropertySalesType(content.find(".top_body_L3 > .top_rt_l3_main > .produto_l3_rt > ul > li > strong").text());
+        
+        propertyDetails.title   = content.find(".top_body_L3 > .top_body_L3_lft > h1").text();
+        propertyDetails.price   = content.find(".top_body_L3 > .top_rt_l3_main > .produto_l3_rt > ul > li > b").text();
+        propertyDetails.type    = GenericExtractor.checkPropertySalesType(content.find(".top_body_L3 > .top_rt_l3_main > .produto_l3_rt > ul > li > strong").text());
                
         const iptucondominium = [];
         content.find(".top_body_L3 > .top_rt_l3_main > .produto_l3_rt2 > ul > li").each((i, el) => {
             iptucondominium.push($(el).find("strong").text().match(/([0-9]*\.[0-9]+|[0-9]+)/)[0]);
         });
-        if(strongs.length < 1) throw new Error("Default are 2 tags strong. Adjust if the pattern changes.");
-        propertyDetails.IPTU = iptucondominium[0];
+
+        // variando. Mudar para regex.
+        if(iptucondominium.length != 2) throw new Error("Default are 2 tags strong. Adjust if the pattern changes.");
+        
+        propertyDetails.IPTU        = iptucondominium[0];
         propertyDetails.condominium = iptucondominium[1];
 
         const content_secRow = content.find(".content_secRow");
@@ -119,18 +123,55 @@ class NovaEpoca extends GenericExtractor{
         propertyDetails.description = $(contents_secRowArray[0]).find("p").text();
         propertyDetails.locationDetails = this.formatAddress($(contents_secRowArray[1]).find("p"));
 
-        console.log(JSON.stringify(propertyDetails, null, 4));
+        const dadosDoImovel             = await this.getDadosDoImovel($(contents_secRowArray[2]))
+        propertyDetails.bedrooms        = dadosDoImovel.bedrooms;
+        propertyDetails.userfulArea     = dadosDoImovel.userfulArea;
+        propertyDetails.livingRoom      = dadosDoImovel.livingRoom;
+
+        propertyDetails.acomodations    = $(contents_secRowArray[3]).find(".row > .col-sm-9").text();
+        
+        propertyDetails.imgs            = this.getImgsInProtertyDetails($(contents_secRowArray[5]));
 
         return propertyDetails;
     }
 
+    getImgsInProtertyDetails(selector){
+        const divs = selector.find(".row > .col-sm-12 > .photos_sec > .photo_colInr");
+        const imgUrls = [];
+        for (let i = 0; i < divs.length; i++) {
+            imgUrls.push(divs.eq(i).attr("data-src"));
+        }
+        // return imgUrls.length > 0 ? imgUrls : [];
+        if(imgUrls <= 0){
+            return [];
+        }
+        return imgUrls;
+    }
+
+    // dados do imovel is a session of the site.
+    async getDadosDoImovel(selector){
+        const data = selector.find(".row > .col-sm-9 > .row");
+        const divs = data.find(".col-sm-4");
+
+        const result = {};
+        result.bedrooms       = divs.text().match(/[0-9]{1}\WQuartos/gmi)[0]            || `${0} Bedrooms`;
+        result.userfulArea    = divs.text().match(/Area\W\W[a-z]+\W[0-9]+\WM2/gmi)[0]   || `${0} M2`;
+        result.livingRoom     = divs.text().match(/[0-9]\W[a-z]ala(\(s\)|\W)/gmi)[0]    || `${0} LivingRoom`;;
+
+        // TODO: bathrooms
+        
+        return result;
+    }
+
     formatAddress(addressSelector){
         const strongs = addressSelector.find("strong");
-        if(strongs.length < 2) throw new Error("Default are 3 tags strong. Adjust if the pattern changes.");
+        if(strongs.length != 3) throw new Error("Default are 3 tags strong. Adjust if the pattern changes.");
         const strongsArray = [];
         strongs.each((i, el) => strongsArray.push(el));
-        const street = this.cheerio.load(strongsArray[0]); 
-        const city = this.cheerio.load(strongsArray[2]); 
+
+        // variações: esta vindo com 2 ou 3 divs do endereço. Mudar para regex.
+        const street    = this.cheerio.load(strongsArray[0]); 
+        const city      = this.cheerio.load(strongsArray[2]); 
         return `${street.text()}, ${city.text()}`;
     }
 
