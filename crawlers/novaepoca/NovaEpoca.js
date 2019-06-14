@@ -102,41 +102,30 @@ class NovaEpoca extends GenericExtractor{
         const content = $(".prd_detal_sec > .container > .row > .col-sm-12 > .prd_detal_Inn > .prd_detl_top_menu_L3 > .grey_Prt > .row > .cont_left");
         
         propertyDetails.title   = content.find(".top_body_L3 > .top_body_L3_lft > h1").text();
-        propertyDetails.price   = content.find(".top_body_L3 > .top_rt_l3_main > .produto_l3_rt > ul > li > b").text();
         propertyDetails.type    = GenericExtractor.checkPropertySalesType(content.find(".top_body_L3 > .top_rt_l3_main > .produto_l3_rt > ul > li > strong").text());
-               
-        const iptucondominium = [];
-        content.find(".top_body_L3 > .top_rt_l3_main > .produto_l3_rt2 > ul > li").each((i, el) => {
-            iptucondominium.push($(el).find("strong").text().match(/([0-9]*\.[0-9]+|[0-9]+)/)[0]);
-        });
+        // propertyDetails.imgs    = await this.getImgsInProtertyDetails(content);
+        propertyDetails.IPTU    = await this.getIPTU(content);
+        propertyDetails.price   = await this.getPrice(content);
 
-        // variando. Mudar para regex.
-        if(iptucondominium.length != 2) throw new Error("Default are 2 tags strong. Adjust if the pattern changes.");
-        
-        propertyDetails.IPTU        = iptucondominium[0];
-        propertyDetails.condominium = iptucondominium[1];
-
-        const content_secRow = content.find(".content_secRow");
-        const contents_secRowArray = [];
-        content_secRow.each((i, el) => contents_secRowArray.push(el));
-
-        propertyDetails.description = $(contents_secRowArray[0]).find("p").text();
-        propertyDetails.locationDetails = this.formatAddress($(contents_secRowArray[1]).find("p"));
-
-        const dadosDoImovel             = await this.getDadosDoImovel($(contents_secRowArray[2]))
-        propertyDetails.bedrooms        = dadosDoImovel.bedrooms;
-        propertyDetails.userfulArea     = dadosDoImovel.userfulArea;
-        propertyDetails.livingRoom      = dadosDoImovel.livingRoom;
-
-        propertyDetails.acomodations    = $(contents_secRowArray[3]).find(".row > .col-sm-9").text();
-        
-        propertyDetails.imgs            = this.getImgsInProtertyDetails($(contents_secRowArray[5]));
-
+        console.log(JSON.stringify(propertyDetails, null, 4));
         return propertyDetails;
     }
 
-    getImgsInProtertyDetails(selector){
-        const divs = selector.find(".row > .col-sm-12 > .photos_sec > .photo_colInr");
+    async getIPTU(selector){
+        const dom = selector.find(".top_body_L3 > .top_rt_l3_main");
+        const matchs = /IPTU\WR\$\W[0-9]{1,4}/gmi.exec(dom.text());
+        return matchs ? parseFloat(/[0-9]{1,4}/gmi.exec(matchs[0])).toFixed(2) : parseFloat(0);
+    }
+
+    async getPrice(selector){
+        const dom = selector.find(".top_body_L3 > .top_rt_l3_main");
+        console.log(dom.text());
+        const matchs = /Valor de Compra R\$ [0-9]+\.[0-9]+/gmi.exec(dom.text());
+        return matchs ? parseFloat(/[0-9]+\.[0-9]+/gmi.exec(matchs[0])).toFixed(3) : parseFloat(0);
+    }
+
+    async getImgsInProtertyDetails(selector){
+        const divs = selector.find(".galeria > .row > .col-sm-12 > .photos_sec > .photo_colInr");
         const imgUrls = [];
         for (let i = 0; i < divs.length; i++) {
             imgUrls.push(divs.eq(i).attr("data-src"));
@@ -163,7 +152,7 @@ class NovaEpoca extends GenericExtractor{
         return result;
     }
 
-    formatAddress(addressSelector){
+    async formatAddress(addressSelector){
         const strongs = addressSelector.find("strong");
         if(strongs.length != 3) throw new Error("Default are 3 tags strong. Adjust if the pattern changes.");
         const strongsArray = [];

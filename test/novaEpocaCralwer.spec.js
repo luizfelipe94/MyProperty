@@ -12,6 +12,14 @@ describe("Tests Nova Epoca Scrapper.", () => {
         type: 1
     };
 
+    // it("Initial setups", async () => {
+    //     const cities = await NEUtils.saveCities();
+    //     const beighborhoods = await NEUtils.saveBeighborhood();
+        
+    //     expect(cities).to.not.be.undefined;
+    //     expect(beighborhoods).to.not.be.undefined;
+    // });
+
     // it("Test main function", async () => {
     //     // main function execute full scrapper execution
     //     console.log("Script being started.");
@@ -76,16 +84,13 @@ describe("Tests Nova Epoca Scrapper.", () => {
         const teste = docs[0];
         const NE = new NovaEpoca(params);
 
-        console.log(teste.mainInfo.url);
-
         // https://www.novaepoca.com.br/prontos/apartamento-meier-3-quartos/13076/
         // esta url funciona para como o codigo esta no momento.
         // com as variacoes de html no site, pensar em outra estrategia de pegar os dados
         // talvez com regex ou melhorando no cheerio.
 
         const propertyDetails = await NE.extractPropertyDetails("https://www.novaepoca.com.br/prontos/apartamento-meier-3-quartos/13076/");
-        console.log(teste.mainInfo.url);
-        console.log(JSON.stringify(propertyDetails, null, 4));
+        // console.log(JSON.stringify(propertyDetails, null, 4));
 
     });
 
