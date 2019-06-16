@@ -3,6 +3,7 @@ const cheerio = require('cheerio');
 const delay = require('../helper/delay');
 const Property = require('../models/property');
 const typesPattern = require('../helper/propertySalesTypePatterns');
+const bcrypt = require('bcrypt');
 
 class GenericExtractor {
 
@@ -33,24 +34,23 @@ class GenericExtractor {
         }
     }
 
-    async getDataToExtract(conditions){
+    static async getDataToExtract(conditions){
         if(!conditions){
             conditions = {
                 isActive: true,
                 propertyDetails: null
             };
         }
-        const query = Property.find(conditions, 'mainInfo');
+        const query = Property.find(conditions);
         const promise = query.exec();
         return new Promise((resolve, reject) => {
             promise.then(res => {
-                const urls = res.map(el =>  el.mainInfo);
-                resolve(urls);
+                resolve(res);
             });
         });
     }
 
-    static checkPropertySalesType(text){
+    static async checkPropertySalesType(text){
         if(typesPattern.sale.includes(text)){
             return "sale";
         }else if(typesPattern.rental.includes(text)){
@@ -60,8 +60,34 @@ class GenericExtractor {
         }
     }
 
-    static async saveProperty(){
+    static async saveProperty(property){
+        if(!property) throw new Error("Property required.");
+        const p = new Property(property);
+        p.save(function(err, doc){
+            if(err) throw new Error("Error ocurred saving property.");
+            if(doc){
+                console.log("Success saved!");
+            }
+        });
+    }
 
+    static async findAndUpdate(query, details){
+        await Property.findOneAndUpdate(query, {propertyDetails: details}, {upsert: true}, function(err, doc){
+            if(err) throw new Error("Error!!!");
+        });
+    }
+
+    static async genHash(data){
+        return new Promise((resolve, reject) => {
+            bcrypt.genSalt(10, function(err, salt){
+                if(err) reject(err);
+                const dataHash = JSON.stringify(data);
+                bcrypt.hash(dataHash, salt, function(err, hash){
+                    if(err) reject(err);
+                    resolve(hash)
+                });
+            });
+        })
     }
 
 }

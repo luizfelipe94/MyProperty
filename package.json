@@ -4,7 +4,7 @@
   "description": "Property crawler",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --timeout 300000",
+    "test": "mocha --timeout 300000 --exit",
     "dev": "nodemon index.js",
     "prod": "pm2 index.js"
   },

@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+mongoose.set('useFindAndModify', false);
 
 const MainInfo = new mongoose.Schema({
     title: { type: String, required: false },
@@ -32,40 +32,13 @@ const PropertyDetails = new mongoose.Schema({
 const PropertySchema = new mongoose.Schema({
     mainInfo: MainInfo,
     propertyDetails: PropertyDetails,
-    hash: { type: String }, // soon required true
+    hash: { type: String, required: true }, // soon required true
     isActive: { type: Boolean, required: true, default: true },
     dtRegister: { type: Date, required: true, default: Date.now() },
     dtUpdated: { type: Date },
     version: { type: Number, required: true, default: 0, min: 0 }
 });
 
-PropertySchema.pre('save', function(next){
-    const prop = this;
-    bcrypt.genSalt(10, function(err, salt){
-        if(err) return next(err);
-        const dataHash = JSON.stringify(prop.mainInfo);
-        bcrypt.hash(dataHash, salt, function(err, hash){
-            if(err) return next(err);
-            prop.hash = hash;
-            next();
-        });
-    });
-});
-
-PropertySchema.methods.compareHash = function(mainInfo, cb){
-    const mainInfo = JSON.stringify(mainInfo);
-    bcrypt.compare(mainInfo, this.hash, function(err, isMatch){
-        if(err) return cb(err);
-        cb(null, isMatch);
-    });
-};
-
-// metodo provisório ate ajustar o de comparar hash.
-PropertySchema.methods.compareMainInfo = function(mainInfo, cb){
-    const comparator = JSON.stringify(mainInfo);
-    const toCompare = JSON.stringify(this.mainInfo);
-    cb(comparator === toCompare);
-}
 
 const Property = mongoose.model("Property", PropertySchema);
 

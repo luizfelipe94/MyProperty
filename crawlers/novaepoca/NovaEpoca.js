@@ -1,15 +1,12 @@
 const GenericExtractor = require('../GenericExtractor');
 const NEUtils = require('./NovaEpocaUtils');
 const config = require('./novaepoca-config');
+const cheerio = require('cheerio');
 
 class NovaEpoca extends GenericExtractor{
     
     constructor(params, request, cheerio){
         super(params, request, cheerio);
-    }
-
-    async main(){
-
     }
 
     // scrolls through all pages for the purpose and beighborhood
@@ -25,6 +22,7 @@ class NovaEpoca extends GenericExtractor{
             if(totalPages.totalPages <= 0) throw new Error("0 pages to scraping.");
             
             for (let i = 1; i <= totalPages.totalPages; i++) {
+            // for (let i = 1; i <= 1; i++) {
                 console.log(`Starting scraper for page ${i}`);let url = `https://www.novaepoca.com.br/${this.params.purpose}/?bairro=${idBeighborhood}&pagina=${i}&Tipos[]=${this.params.type}&ValorMin=0&ValorMax=5.000.000+&AreaMin=0&AreaMax=6.000+&`;
                 if(!this.params.type) url = `https://www.novaepoca.com.br/${this.params.purpose}/?bairro=${idBeighborhood}&pagina=${i}&ValorMin=0&ValorMax=5.000.000+&AreaMin=0&AreaMax=6.000+&`;
                 
@@ -41,9 +39,11 @@ class NovaEpoca extends GenericExtractor{
                 // scrolls through all list itens. for this site, it is usually 12.
                 for (let i = 0; i < listResults.length; i++) {
                     const data = {};
+
                     // resulto_col1
-                    data.mainInfo = await this.getMainInfo(listResults.eq(i));
-                    data.mainInfo.imgs = await this.getUrlImgsFromMainInfo(listResults.eq(i));
+                    data.mainInfo       = await this.getMainInfo(listResults.eq(i));
+                    data.mainInfo.imgs  = await this.getUrlImgsFromMainInfo(listResults.eq(i));
+                    data.hash           = await GenericExtractor.genHash(data.mainInfo);
 
                     // for now all results will be saved. i'll change soon to save with upsert.
                     const PropertyMainInfoSchema = data;
@@ -73,12 +73,12 @@ class NovaEpoca extends GenericExtractor{
     }
 
     async getMainInfo(listItem){
-        const mainInfo = {};
-        mainInfo.title = listItem.find(".resulto_col1_rit > a > h2").text();
-        mainInfo.location = listItem.find(".resulto_col1_rit > h4").text();
-        mainInfo.shortDescription = listItem.find(".resulto_col1_rit > p").text();
-        mainInfo.url = listItem.find(".resulto_col1_rit > .resulto_item_btn > a").attr("href");
-        mainInfo.type = NEUtils.getPropertyType(this.params.type);
+        const mainInfo              = {};
+        mainInfo.title              = listItem.find(".resulto_col1_rit > a > h2").text();
+        mainInfo.location           = listItem.find(".resulto_col1_rit > h4").text();
+        mainInfo.shortDescription   = listItem.find(".resulto_col1_rit > p").text();
+        mainInfo.url                = listItem.find(".resulto_col1_rit > .resulto_item_btn > a").attr("href");
+        mainInfo.type               = NEUtils.getPropertyType(this.params.type);
         return mainInfo;
     }
 
@@ -96,19 +96,34 @@ class NovaEpoca extends GenericExtractor{
     async extractPropertyDetails(url){
         // acomodation,  bathrooms, 
         const propertyDetails = {};
-        const options = {url: url};
+        const options = {url: url, delay: config.delays.pageProperty };
         const html = await this.request.req(options);
         const $ = await this.request.loadHtml(html);
         const content = $(".prd_detal_sec > .container > .row > .col-sm-12 > .prd_detal_Inn > .prd_detl_top_menu_L3 > .grey_Prt > .row > .cont_left");
         
-        propertyDetails.title   = content.find(".top_body_L3 > .top_body_L3_lft > h1").text();
-        propertyDetails.type    = GenericExtractor.checkPropertySalesType(content.find(".top_body_L3 > .top_rt_l3_main > .produto_l3_rt > ul > li > strong").text());
-        // propertyDetails.imgs    = await this.getImgsInProtertyDetails(content);
-        propertyDetails.IPTU    = await this.getIPTU(content);
-        propertyDetails.price   = await this.getPrice(content);
-
-        console.log(JSON.stringify(propertyDetails, null, 4));
+        // mounting the object tha contains all the information about the property.
+        propertyDetails.title       = content.find(".top_body_L3 > .top_body_L3_lft > h1").text();
+        propertyDetails.type        = await GenericExtractor.checkPropertySalesType(content.find(".top_body_L3 > .top_rt_l3_main > .produto_l3_rt > ul > li > strong").text());
+        propertyDetails.IPTU        = await this.getIPTU(content);
+        propertyDetails.price       = await this.getPrice(content);
+        propertyDetails.description = await this.getDescription(content);
+        propertyDetails.imgs        = await this.getImgsInProtertyDetails(content);
         return propertyDetails;
+    }
+
+    async getDescription(selector){
+        const divs = selector.find(".content_secRow");
+        const $ = await this.request.loadHtml(divs);
+        const content_secRows = $(divs).toArray();
+        var description = "";
+        for (let i = 0; i < content_secRows.length; i++) {
+            let matchs = /Sobre\W{1}este\W{1}imóvel/gmi.exec($(content_secRows[i]).text());
+            if(matchs){
+                description = $(content_secRows[i]).find('p').text();
+                break;
+            }        
+        }
+        return description || null;
     }
 
     async getIPTU(selector){
@@ -119,7 +134,6 @@ class NovaEpoca extends GenericExtractor{
 
     async getPrice(selector){
         const dom = selector.find(".top_body_L3 > .top_rt_l3_main");
-        console.log(dom.text());
         const matchs = /Valor de Compra R\$ [0-9]+\.[0-9]+/gmi.exec(dom.text());
         return matchs ? parseFloat(/[0-9]+\.[0-9]+/gmi.exec(matchs[0])).toFixed(3) : parseFloat(0);
     }
