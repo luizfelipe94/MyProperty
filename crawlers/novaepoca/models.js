@@ -18,7 +18,16 @@ const beighborhoodSchema = new mongoose.Schema({
 });
 const Beighborhood = mongoose.model('beighborhood', beighborhoodSchema);
 
+const ParamsSchema = new mongoose.Schema({
+    location: { type: String },
+    purpose: { type: String },
+    type: { type: Number }
+})
+
+const Params = mongoose.model('params', ParamsSchema);
+
 module.exports = {
     City,
-    Beighborhood
+    Beighborhood,
+    Params
 }

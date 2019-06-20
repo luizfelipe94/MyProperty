@@ -4,6 +4,7 @@ const assert = require('assert');
 const expect = require('chai').expect;
 const Property = require('../models/property');
 const GenericExtractor = require('../crawlers/GenericExtractor');
+const BuildParams = require('../crawlers/novaepoca/BuildParams');
 
 describe("Tests Nova Epoca Scrapper.", () => {
 
@@ -89,6 +90,12 @@ describe("Tests Nova Epoca Scrapper.", () => {
 
             expect(true).to.be.true;
         }
+    });
+
+    it("Get Params", async () => {
+        const params = await BuildParams.GetParams("Meier", "prontos");
+        console.log(params.length);
+        expect(params).to.be.a('array');
     });
 
 });

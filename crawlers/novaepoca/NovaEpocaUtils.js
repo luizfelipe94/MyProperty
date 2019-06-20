@@ -38,6 +38,10 @@ class NovaEpocaUtils {
         return result;
     }
 
+    static getTotalPropertyType(){
+        return 17;
+    }
+
     static getPropertyType(id){
         switch(id){
             case 1:

@@ -13,6 +13,8 @@ class NovaEpoca extends GenericExtractor{
     async getMainInfoPropeties(){
         
         if(!this.params.location || !this.params.purpose) throw new Error(`purpose and location are expected.`);
+
+        if(!['prontos', 'lancamentos'].includes(this.params.purpose)) throw new Error('Invalid purpose!');
         
         console.log(`Delay time for pagination: ${config.delays.pagination}.`);
         
