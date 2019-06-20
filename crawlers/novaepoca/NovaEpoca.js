@@ -11,11 +11,16 @@ class NovaEpoca extends GenericExtractor{
 
     // scrolls through all pages for the purpose and beighborhood
     async getMainInfoPropeties(){
+        
         if(!this.params.location || !this.params.purpose) throw new Error(`purpose and location are expected.`);
+        
         console.log(`Delay time for pagination: ${config.delays.pagination}.`);
+        
         const result = await NEUtils.getBeighborhood({value: this.params.location});
         const idBeighborhood = result.id; 
+        
         console.log(`Search params:   \n location: ${this.params.location}.   \n purpose: ${this.params.purpose}.   \n type: ${NEUtils.getPropertyType(this.params.type)}`);
+        
         try{
             const totalPages = await this.getTotalPages();
             console.log(`Total pages: ${totalPages.totalPages}`);
@@ -23,7 +28,8 @@ class NovaEpoca extends GenericExtractor{
             
             for (let i = 1; i <= totalPages.totalPages; i++) {
             // for (let i = 1; i <= 1; i++) {
-                console.log(`Starting scraper for page ${i}`);let url = `https://www.novaepoca.com.br/${this.params.purpose}/?bairro=${idBeighborhood}&pagina=${i}&Tipos[]=${this.params.type}&ValorMin=0&ValorMax=5.000.000+&AreaMin=0&AreaMax=6.000+&`;
+                console.log(`Starting scraper for page ${i}`);
+                let url = `https://www.novaepoca.com.br/${this.params.purpose}/?bairro=${idBeighborhood}&pagina=${i}&Tipos[]=${this.params.type}&ValorMin=0&ValorMax=5.000.000+&AreaMin=0&AreaMax=6.000+&`;
                 if(!this.params.type) url = `https://www.novaepoca.com.br/${this.params.purpose}/?bairro=${idBeighborhood}&pagina=${i}&ValorMin=0&ValorMax=5.000.000+&AreaMin=0&AreaMax=6.000+&`;
                 
                 const options = {
