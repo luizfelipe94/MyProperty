@@ -3,28 +3,24 @@ const NovaEpoca     = require('./NovaEpoca');
 const Queue         = require('../../rabbitmq/Queue');
 
 const ExecuteMainInfo = async () => {
-
+    // salva a capa dods imoveis.
     const db = require('../../lib/mongo').db;
-
     db.once('open', async function(){
-        
+
+        // nao passar parametros para crawlear o site todo.
         const params = await BuildParams.GetParams("Meier", "prontos");
         
         params.forEach(async (param, i) => {
-            
             console.log(`${i+1} - PURPOSE.: ${param.purpose} - LOCATION.: ${param.location} - TYPE.: ${param.type}.`);
             const NE = new NovaEpoca(param);
             let ok = await NE.getMainInfoPropeties();
-            
             if(ok){
                 console.log("Page screpped successfully!");
             }
-
         });
-
+        
         db.close();
         process.exit(1);
-
     });
 }
 
