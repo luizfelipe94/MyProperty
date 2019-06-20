@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+mongoose.set('useFindAndModify', false);
+mongoose.set('createIndexes', false);
 
 const citySchema = new mongoose.Schema({
     id: { type: String, unique: true },

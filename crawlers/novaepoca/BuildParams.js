@@ -56,7 +56,7 @@ const GetParams = async (_location, _purpose) => {
         purpose: _purpose
     };
 
-    const result = await Params.find(query)
+    const result = await Params.find(query, {purpose: 1, location: 1, type: 1, _id: 0})
     .then(docs => {
         return docs;
     })
@@ -66,11 +66,6 @@ const GetParams = async (_location, _purpose) => {
 
     return result;
 }
-
-(async () => {
-    await BuidParams();
-    process.exit(1);
-})();
 
 module.exports = {
     BuidParams,
