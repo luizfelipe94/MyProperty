@@ -16,7 +16,7 @@ const BuidParams = async () => {
         for(let l of locations){
             params.location = l.value;
 
-            const totalTypes = NEUtils.getTotalPropertyType();
+            const totalTypes = NEUtils.getTotalPropertyType(p);
 
             for(let i=1; i<=totalTypes; i++){
                 params.type = i;
@@ -66,6 +66,11 @@ const GetParams = async (_location, _purpose) => {
 
     return result;
 }
+
+(async () => {
+    await BuidParams();
+    process.exit(1);
+})();
 
 module.exports = {
     BuidParams,

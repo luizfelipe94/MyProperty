@@ -1,9 +1,9 @@
-const request = require('../helper/request');
-const cheerio = require('cheerio');
-const delay = require('../helper/delay');
-const Property = require('../models/property');
-const typesPattern = require('../helper/propertySalesTypePatterns');
-const bcrypt = require('bcrypt');
+const request       = require('../helper/request');
+const cheerio       = require('cheerio');
+const delay         = require('../helper/delay');
+const Property      = require('../models/property');
+const typesPattern  = require('../helper/propertySalesTypePatterns');
+const bcrypt        = require('bcrypt');
 
 class GenericExtractor {
 

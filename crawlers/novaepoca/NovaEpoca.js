@@ -21,7 +21,7 @@ class NovaEpoca extends GenericExtractor{
         const result = await NEUtils.getBeighborhood({value: this.params.location});
         const idBeighborhood = result.id; 
         
-        console.log(`Search params:   \n location: ${this.params.location}.   \n purpose: ${this.params.purpose}.   \n type: ${NEUtils.getPropertyType(this.params.type)}`);
+        console.log(`Search params:   \n location: ${this.params.location}.   \n purpose: ${this.params.purpose}.   \n type: ${NEUtils.getPropertyType(this.params.type, this.params.purpose)}`);
         
         try{
             const totalPages = await this.getTotalPages();
@@ -86,7 +86,7 @@ class NovaEpoca extends GenericExtractor{
         mainInfo.location           = listItem.find(".resulto_col1_rit > h4").text();
         mainInfo.shortDescription   = listItem.find(".resulto_col1_rit > p").text();
         mainInfo.url                = listItem.find(".resulto_col1_rit > .resulto_item_btn > a").attr("href");
-        mainInfo.type               = NEUtils.getPropertyType(this.params.type);
+        mainInfo.type               = NEUtils.getPropertyType(this.params.type, this.params.purpose);
         return mainInfo;
     }
 
