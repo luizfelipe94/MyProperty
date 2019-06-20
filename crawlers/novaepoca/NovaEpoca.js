@@ -1,7 +1,7 @@
-const GenericExtractor = require('../GenericExtractor');
-const NEUtils = require('./NovaEpocaUtils');
-const config = require('./novaepoca-config');
-const cheerio = require('cheerio');
+const GenericExtractor  = require('../GenericExtractor');
+const NEUtils           = require('./NovaEpocaUtils');
+const config            = require('./novaepoca-config');
+const cheerio           = require('cheerio');
 
 class NovaEpoca extends GenericExtractor{
     

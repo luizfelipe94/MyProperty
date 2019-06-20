@@ -1,6 +1,6 @@
-const mongoose = require('mongoose');
-const NEUtils = require('./NovaEpocaUtils');
-const { Params } = require('./models');
+const mongoose      = require('mongoose');
+const NEUtils       = require('./NovaEpocaUtils');
+const { Params }    = require('./models');
 
 const BuidParams = async () => {
     
