@@ -72,17 +72,9 @@ class GenericExtractor {
         });
     }
 
-    static async findAndUpdate(query, details){
-        const db = require('../lib/mongo').db;
-        db.once('open', async function(){
-            return new Promise((resolve, reject) => {
-                Property.findOneAndUpdate(query, {propertyDetails: details}, {upsert: true}, function(err, doc){
-                    if(err) reject(false);
-                    console.log(doc);
-                    resolve(doc);
-                    db.close();
-                });
-            });
+    static findAndUpdate(query, details){
+        Property.findOneAndUpdate(query, {propertyDetails: details}, {upsert: true}, function(err, doc){
+            if(err) console.log(err);
         });
     }
 

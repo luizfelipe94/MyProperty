@@ -144,31 +144,34 @@ class NovaEpoca extends GenericExtractor{
 
     async executePropertyDetail(mainInfo){
 
-        // console.log(mainInfo);
+        const self = this;
 
-        const details = await this.extractPropertyDetails(mainInfo.url);
+        
 
-        console.log(JSON.stringify(details, null, 4));
-            
-        // por enquanto pegando pela url. depois será pelo hash.
-        const query = {
-            'mainInfo.url': mainInfo.url
-        };
+            const details = await self.extractPropertyDetails(mainInfo.mainInfo.url);
 
-        const result = await GenericExtractor.findAndUpdate(query, details); 
+            // console.log(JSON.stringify(mainInfo, null, 4));
+                
+            // por enquanto pegando pela url. depois será pelo hash.
+            const query = {
+                hash: mainInfo.hash
+            };
 
-        // await Property.findOneAndUpdate(query, {propertyDetails: details}, {upsert: true}, function(err, doc){
-        //     if(err) return err;
+            GenericExtractor.findAndUpdate(query, details, (err, doc) => {
+                if(doc){
+                    console.log(doc);
+                    return true;
+                }
+        
+                return false;
+            }); 
 
-        //     return {msg: "ok", succes: true};
-        // });
+            // await Property.findOneAndUpdate(query, {propertyDetails: details}, {upsert: true}, function(err, doc){
+            //     if(err) return err;
 
-        if(result){
-            console.log(result);
-            return true;
-        }
-
-        return false;
+            //     return {msg: "ok", succes: true};
+            // });
+        
     }
 
     async getDescription(selector){

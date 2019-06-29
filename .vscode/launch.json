@@ -13,6 +13,16 @@
             "skipFiles": [
                 "<node_internals>/**/*.js"
             ]
+        },
+
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Fila",
+            "program": "${workspaceFolder}\\rabbitmq\\PropertyCrawlerWorker.js",
+            "skipFiles": [
+                "<node_internals>/**/*.js"
+            ]
         }
     ]
 }

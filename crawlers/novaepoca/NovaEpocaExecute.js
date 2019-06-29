@@ -2,6 +2,18 @@ const BuildParams       = require('./BuildParams');
 const NovaEpoca         = require('./NovaEpoca');
 const GenericExtractor  = require('../GenericExtractor');
 const Queue             = require('../../rabbitmq/Queue');
+const argv              = require('yargs').argv;
+const figlet            = require('figlet');
+const NEUtils           = require('./NovaEpocaUtils');
+
+const PrepareEnvironment = () => {
+    const db = require('../../lib/mongo').db;
+    db.once('open', async function(){
+        await NEUtils.saveBeighborhood();
+        await NEUtils.saveCities();
+        await BuildParams.BuidParams();
+    });
+}
 
 const ExecuteMainInfo = async () => {
     // salva a capa dods imoveis.
@@ -50,7 +62,7 @@ const ExecutePropertyUrl = async (frequency) => {
         
         for (let i = 0; i < result.length; i++) {
             
-            await Queue.sendToQueue(result[i].mainInfo, "NovaEpocaCrawler");
+            await Queue.sendToQueue(result[i], "NovaEpocaCrawler");
 
         }
 
@@ -62,12 +74,41 @@ const ExecutePropertyUrl = async (frequency) => {
 }
 
 (async () => {
-    await ExecuteMainInfo();
-    // await ExecutePropertyUrl();
-    console.log("TESTANDO DEBUG.");
+
+    figlet('Nova Epoca', async function(err, data) {
+        
+        if (err) {
+            console.log('Something went wrong...');
+            console.dir(err);
+            return;
+        }
+        console.log(data);  
+
+        switch(argv.exec){
+                case "search":
+                await ExecuteMainInfo();
+            break;
+                case "enqueue":
+                await ExecutePropertyUrl();
+            break;
+            case "deps":
+                await PrepareEnvironment();
+                break;
+            default: 
+                console.log(`\nComando não encontrado. \n
+                Comandos: 
+                - search    .:  Pega a informação principal das propriedades junto com sua url.
+                - enqueue   .:  Envia para a fila as propriedades a serem extraídas, já com sua informação principal.
+                - deps      .:  Prepara o ambiente do crawler. Obs.: Necessário executar só na primeira vez.
+                
+            `);
+        }
+    });
+
 })();
 
 module.exports = {
     ExecuteMainInfo,
-    ExecutePropertyUrl
+    ExecutePropertyUrl,
+    PrepareEnvironment
 };
