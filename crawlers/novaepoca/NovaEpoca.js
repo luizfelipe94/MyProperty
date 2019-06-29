@@ -62,6 +62,7 @@ class NovaEpoca extends GenericExtractor{
                     data.mainInfo       = await this.getMainInfo(listResults.eq(i));
                     data.mainInfo.imgs  = await this.getUrlImgsFromMainInfo(listResults.eq(i));
                     data.hash           = await GenericExtractor.genHash(data.mainInfo);
+                    data.source         = "Nova Época";
 
                     // for now all results will be saved. i'll change soon to save with upsert.
                     const PropertyMainInfoSchema = data;
@@ -146,31 +147,20 @@ class NovaEpoca extends GenericExtractor{
 
         const self = this;
 
-        
+        const details = await self.extractPropertyDetails(mainInfo.mainInfo.url);
 
-            const details = await self.extractPropertyDetails(mainInfo.mainInfo.url);
+        const query = {
+            hash: mainInfo.hash
+        };
 
-            // console.log(JSON.stringify(mainInfo, null, 4));
-                
-            // por enquanto pegando pela url. depois será pelo hash.
-            const query = {
-                hash: mainInfo.hash
-            };
-
-            GenericExtractor.findAndUpdate(query, details, (err, doc) => {
-                if(doc){
-                    console.log(doc);
-                    return true;
-                }
-        
-                return false;
-            }); 
-
-            // await Property.findOneAndUpdate(query, {propertyDetails: details}, {upsert: true}, function(err, doc){
-            //     if(err) return err;
-
-            //     return {msg: "ok", succes: true};
-            // });
+        GenericExtractor.findAndUpdate(query, details, (err, doc) => {
+            if(doc){
+                console.log(doc);
+                return true;
+            }
+    
+            return false;
+        }); 
         
     }
 

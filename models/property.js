@@ -8,7 +8,8 @@ const MainInfo = new mongoose.Schema({
     url:                { type: String, required: false },
     imgs:               { type: Array },
     type:               { type: String },
-    dtRegister:         { type: Date, required: true, default: Date.now() }
+    dtRegister:         { type: Date, required: true, default: Date.now() },
+    source:             { type: String, required: true },
 });
 
 const PropertyDetails = new mongoose.Schema({
