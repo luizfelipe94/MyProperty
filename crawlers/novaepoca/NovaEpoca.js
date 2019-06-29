@@ -1,7 +1,8 @@
 const GenericExtractor  = require('../GenericExtractor');
 const NEUtils           = require('./NovaEpocaUtils');
 const config            = require('./novaepoca-config');
-const cheerio           = require('cheerio');
+const delay             = require('../../helper/delay');
+const Property          = require('../../models/property');
 
 class NovaEpoca extends GenericExtractor{
     
@@ -17,16 +18,24 @@ class NovaEpoca extends GenericExtractor{
         if(!['prontos', 'lancamentos'].includes(this.params.purpose)) throw new Error('Invalid purpose!');
         
         console.log(`Delay time for pagination: ${config.delays.pagination}.`);
+        await delay(config.delays.pagination);
         
         const result = await NEUtils.getBeighborhood({value: this.params.location});
+
+        if(!result) throw new Error("Location not found!");
+
         const idBeighborhood = result.id; 
         
         console.log(`Search params:   \n location: ${this.params.location}.   \n purpose: ${this.params.purpose}.   \n type: ${NEUtils.getPropertyType(this.params.type, this.params.purpose)}`);
         
         try{
-            const totalPages = await this.getTotalPages();
+            const totalPages = await this.getTotalPages(idBeighborhood);
+
+            if(!totalPages) return false;
+
             console.log(`Total pages: ${totalPages.totalPages}`);
-            if(totalPages.totalPages <= 0) throw new Error("0 pages to scraping.");
+            
+            if(totalPages.totalPages <= 0) return false;
             
             for (let i = 1; i <= totalPages.totalPages; i++) {
             // for (let i = 1; i <= 1; i++) {
@@ -46,6 +55,7 @@ class NovaEpoca extends GenericExtractor{
 
                 // scrolls through all list itens. for this site, it is usually 12.
                 for (let i = 0; i < listResults.length; i++) {
+
                     const data = {};
 
                     // resulto_col1
@@ -61,23 +71,36 @@ class NovaEpoca extends GenericExtractor{
             }
             return true;
         }catch(e){
+            console.error(e);
             return false;
         }
     }
 
     async getTotalPages(){
-        const result = await NEUtils.getBeighborhood({value: this.params.location});
-        const idBeighborhood = result.id;  
-        // const url = `https://www.novaepoca.com.br/prontos/?finalidade=${this.params.purpose}&bairro=${idBeighborhood}&localizacao=Meier&ValorMin=0&ValorMax=5.000.000%2B&AreaMin=0&AreaMax=6.000%2B`;
-        const url = `https://www.novaepoca.com.br/prontos/?finalidade=${this.params.purpose}&Tipos=${this.params.type}&bairro=${idBeighborhood}&localizacao=Meier&ValorMin=0&ValorMax=5.000.000%2B&AreaMin=0&AreaMax=6.000%2B`;
+        
+        const result            = await NEUtils.getBeighborhood({value: this.params.location});
+        const idBeighborhood    = result.id;
+        const location           = result.value;
+
+        const url = `https://www.novaepoca.com.br/prontos/?bairro=${idBeighborhood}&pagina=1&Tipos[]=${this.params.type}&ValorMin=0&ValorMax=5.000.000+&AreaMin=0&AreaMax=6.000+&`
+
         const options = { url: url };
-        const html = await this.request.req(options);
-        const $ = this.cheerio.load(html);
-        const divTotal = $(".resulto_rt_flt");
-        const total = divTotal.text().match(/[0-9]{1,4}/g)[0];
-        const perPage = $(".content-lista").find(".resulto_col1").length;
-        const resumeTotal = await this.resumeTotalPages(total, perPage);
-        return resumeTotal;
+
+        let pageFound = await GenericExtractor.checkPageOpen(options.url);
+
+        if(pageFound){
+
+            const html          = await this.request.req(options);    
+            const $             = await this.cheerio.load(html);
+            const divTotal      = $(".resulto_rt_flt");
+            const total         = divTotal.text().match(/[0-9]{1,4}/g)[0];
+            const perPage       = $(".content-lista").find(".resulto_col1").length;
+            const resumeTotal   = await this.resumeTotalPages(total, perPage);
+
+            return resumeTotal;
+        }
+
+        return null;
     }
 
     async getMainInfo(listItem){
@@ -117,6 +140,35 @@ class NovaEpoca extends GenericExtractor{
         propertyDetails.description = await this.getDescription(content);
         propertyDetails.imgs        = await this.getImgsInProtertyDetails(content);
         return propertyDetails;
+    }
+
+    async executePropertyDetail(mainInfo){
+
+        // console.log(mainInfo);
+
+        const details = await this.extractPropertyDetails(mainInfo.url);
+
+        console.log(JSON.stringify(details, null, 4));
+            
+        // por enquanto pegando pela url. depois será pelo hash.
+        const query = {
+            'mainInfo.url': mainInfo.url
+        };
+
+        const result = await GenericExtractor.findAndUpdate(query, details); 
+
+        // await Property.findOneAndUpdate(query, {propertyDetails: details}, {upsert: true}, function(err, doc){
+        //     if(err) return err;
+
+        //     return {msg: "ok", succes: true};
+        // });
+
+        if(result){
+            console.log(result);
+            return true;
+        }
+
+        return false;
     }
 
     async getDescription(selector){

@@ -3,6 +3,7 @@ const cheerio       = require('cheerio');
 const delay         = require('../helper/delay');
 const Property      = require('../models/property');
 const typesPattern  = require('../helper/propertySalesTypePatterns');
+const notFound      = require('../helper/notFoundPatterns');
 const bcrypt        = require('bcrypt');
 
 class GenericExtractor {
@@ -72,8 +73,16 @@ class GenericExtractor {
     }
 
     static async findAndUpdate(query, details){
-        await Property.findOneAndUpdate(query, {propertyDetails: details}, {upsert: true}, function(err, doc){
-            if(err) throw new Error("Error!!!");
+        const db = require('../lib/mongo').db;
+        db.once('open', async function(){
+            return new Promise((resolve, reject) => {
+                Property.findOneAndUpdate(query, {propertyDetails: details}, {upsert: true}, function(err, doc){
+                    if(err) reject(false);
+                    console.log(doc);
+                    resolve(doc);
+                    db.close();
+                });
+            });
         });
     }
 
@@ -88,6 +97,17 @@ class GenericExtractor {
                 });
             });
         })
+    }
+
+    static async checkPageOpen(url){
+        
+        const options   = { url: url };
+        const $         = await request.loadHtml(await request.req(options));
+        const reg       = new RegExp(notFound.regex[0], "gmi");
+        const text      = $.text();
+        const founded   = reg.test(text);
+
+        return !founded;
     }
 
 }

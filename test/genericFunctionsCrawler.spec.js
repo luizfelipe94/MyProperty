@@ -27,5 +27,11 @@ describe("Generic tests for all crawlers.", function(){
         const results = await GenericExtractor.saveProperties(props);
         results ? assert.ok(true) : assert.fail("Error saving docs");
     });
+
+
+    it("Check if page open", async () => {
+        const statusCode = await GenericExtractor.checkPageOpen("https://www.novaepoca.com.br/prontos/?bairro=45&pagina=1&Tipos[]=6&ValorMin=0&ValorMax=5.000.000+&AreaMin=0&AreaMax=6.000+&");
+        // console.log(statusCode);
+    });
     
 });

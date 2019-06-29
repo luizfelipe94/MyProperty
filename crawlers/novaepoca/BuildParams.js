@@ -51,11 +51,14 @@ const SalvarParams = async (params) => {
 }
 
 const GetParams = async (_location, _purpose) => {
-    const query = {
-        location: _location,
-        purpose: _purpose
-    };
+    
+    let query = {};
 
+    if(_location && _purpose){
+        query.location  = _location;
+        query.purpose   = _purpose;
+    }   
+    
     const result = await Params.find(query, {purpose: 1, location: 1, type: 1, _id: 0})
     .then(docs => {
         return docs;
