@@ -9,7 +9,7 @@ const MainInfo = new mongoose.Schema({
     imgs:               { type: Array },
     type:               { type: String },
     dtRegister:         { type: Date, required: true, default: Date.now() },
-    source:             { type: String, required: true },
+    // source:             { type: String, required: true },
 });
 
 const PropertyDetails = new mongoose.Schema({

@@ -2,7 +2,7 @@ const GenericExtractor  = require('../GenericExtractor');
 const NEUtils           = require('./NovaEpocaUtils');
 const config            = require('./novaepoca-config');
 const delay             = require('../../helper/delay');
-const Property          = require('../../models/property');
+const moment            = require('moment');
 
 class NovaEpoca extends GenericExtractor{
     
@@ -62,7 +62,8 @@ class NovaEpoca extends GenericExtractor{
                     data.mainInfo       = await this.getMainInfo(listResults.eq(i));
                     data.mainInfo.imgs  = await this.getUrlImgsFromMainInfo(listResults.eq(i));
                     data.hash           = await GenericExtractor.genHash(data.mainInfo);
-                    data.source         = "Nova Época";
+                    data.dtRegister     = moment();
+                    // data.source         = "Nova Época";
 
                     // for now all results will be saved. i'll change soon to save with upsert.
                     const PropertyMainInfoSchema = data;

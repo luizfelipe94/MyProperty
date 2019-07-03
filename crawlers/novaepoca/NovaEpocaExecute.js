@@ -22,7 +22,7 @@ const ExecuteMainInfo = async () => {
 
         // nao passar parametros para crawlear o site todo.
         // "Meier", "prontos"
-        const params = await BuildParams.GetParams("Madureira", "prontos");
+        const params = await BuildParams.GetParams();
 
         for(let i = 0; i < params.length; i++){
 
