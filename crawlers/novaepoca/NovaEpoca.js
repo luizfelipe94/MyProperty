@@ -3,6 +3,7 @@ const NEUtils           = require('./NovaEpocaUtils');
 const config            = require('./novaepoca-config');
 const delay             = require('../../helper/delay');
 const moment            = require('moment');
+const Property          = require('../../models/property');
 
 class NovaEpoca extends GenericExtractor{
     
@@ -82,7 +83,7 @@ class NovaEpoca extends GenericExtractor{
         
         const result            = await NEUtils.getBeighborhood({value: this.params.location});
         const idBeighborhood    = result.id;
-        const location           = result.value;
+        const location          = result.value;
 
         const url = `https://www.novaepoca.com.br/prontos/?bairro=${idBeighborhood}&pagina=1&Tipos[]=${this.params.type}&ValorMin=0&ValorMax=5.000.000+&AreaMin=0&AreaMax=6.000+&`
 
@@ -124,45 +125,6 @@ class NovaEpoca extends GenericExtractor{
             urls.push(li.html().match(reg)[0]);
         }
         return urls;
-    }
-
-    async extractPropertyDetails(url){
-        // acomodation,  bathrooms, 
-        const propertyDetails = {};
-        const options = {url: url, delay: config.delays.pageProperty };
-        const html = await this.request.req(options);
-        const $ = await this.request.loadHtml(html);
-        const content = $(".prd_detal_sec > .container > .row > .col-sm-12 > .prd_detal_Inn > .prd_detl_top_menu_L3 > .grey_Prt > .row > .cont_left");
-        
-        // mounting the object tha contains all the information about the property.
-        propertyDetails.title       = content.find(".top_body_L3 > .top_body_L3_lft > h1").text();
-        propertyDetails.type        = await GenericExtractor.checkPropertySalesType(content.find(".top_body_L3 > .top_rt_l3_main > .produto_l3_rt > ul > li > strong").text());
-        propertyDetails.IPTU        = await this.getIPTU(content);
-        propertyDetails.price       = await this.getPrice(content);
-        propertyDetails.description = await this.getDescription(content);
-        propertyDetails.imgs        = await this.getImgsInProtertyDetails(content);
-        return propertyDetails;
-    }
-
-    async executePropertyDetail(mainInfo){
-
-        const self = this;
-
-        const details = await self.extractPropertyDetails(mainInfo.mainInfo.url);
-
-        const query = {
-            hash: mainInfo.hash
-        };
-
-        GenericExtractor.findAndUpdate(query, details, (err, doc) => {
-            if(doc){
-                console.log(doc);
-                return true;
-            }
-    
-            return false;
-        }); 
-        
     }
 
     async getDescription(selector){
@@ -230,6 +192,62 @@ class NovaEpoca extends GenericExtractor{
         const street    = this.cheerio.load(strongsArray[0]); 
         const city      = this.cheerio.load(strongsArray[2]); 
         return `${street.text()}, ${city.text()}`;
+    }
+
+    async extractPropertyDetails(url){
+        // acomodation,  bathrooms, 
+        const propertyDetails = {};
+        const options = {url: url, delay: config.delays.pageProperty };
+        const html = await this.request.req(options);
+        const $ = await this.request.loadHtml(html);
+        const content = $(".prd_detal_sec > .container > .row > .col-sm-12 > .prd_detal_Inn > .prd_detl_top_menu_L3 > .grey_Prt > .row > .cont_left");
+        
+        // mounting the object tha contains all the information about the property.
+        propertyDetails.title       = content.find(".top_body_L3 > .top_body_L3_lft > h1").text();
+        propertyDetails.type        = await GenericExtractor.checkPropertySalesType(content.find(".top_body_L3 > .top_rt_l3_main > .produto_l3_rt > ul > li > strong").text());
+        propertyDetails.IPTU        = await this.getIPTU(content);
+        propertyDetails.price       = await this.getPrice(content);
+        propertyDetails.description = await this.getDescription(content);
+        propertyDetails.imgs        = await this.getImgsInProtertyDetails(content);
+        return propertyDetails;
+    }
+
+    async executePropertyDetail(mainInfo){
+
+        const query = {
+            hash: mainInfo.hash
+        };
+
+        const data = {
+            $inc: { version: 1 },
+            dtUpdated: moment()
+        };
+
+        if(await this.checkPropertyActive(mainInfo.mainInfo.url)){
+            const details = await this.extractPropertyDetails(mainInfo.mainInfo.url);
+            data.propertyDetails = details;
+            await Property.findOneAndUpdate(query, data, { upsert: true }, function(err, doc){
+                if(err) throw new Error("ERRO.: " + err);
+            });
+            console.log(`property ${mainInfo.mainInfo.url} updated!!!`);
+            return true;
+        }
+        else{
+            data.isActive = false;
+            await Property.findOneAndUpdate(query, data, { upsert: true }, function(err, doc){
+                if(err) throw new Error("ERRO.: " + err);
+            });
+            console.error(`property ${mainInfo.mainInfo.url} is not active on website.`);
+            return false;
+        }        
+    }
+
+    async checkPropertyActive(url){
+        const options = {url: url, delay: config.delays.pageProperty };
+        const html = await this.request.req(options);
+        const $ = await this.request.loadHtml(html);
+        const divExists = $(".codigo_imovel");
+        return divExists.length > 0;
     }
 
 }

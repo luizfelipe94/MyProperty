@@ -6,7 +6,11 @@
   "scripts": {
     "test": "mocha --timeout 300000 --exit",
     "dev": "nodemon index.js",
-    "prod": "pm2 index.js"
+    "prod": "pm2 index.js",
+    "startnequeue": "node rabbitmq\\PropertyCrawlerWorker --queue=NovaEpocaCrawler",
+    "startnemaininfo": "node crawlers\\novaepoca\\NovaEpocaExecute.js --exec=search",
+    "startneenqueue": "node crawlers\\novaepoca\\NovaEpocaExecute.js --exec=enqueue",
+    "startnedeps": "node crawlers\\novaepoca\\NovaEpocaExecute.js --exec=deps"
   },
   "author": "Luiz Felipe da Silva",
   "license": "ISC",

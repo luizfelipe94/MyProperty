@@ -72,12 +72,6 @@ class GenericExtractor {
         });
     }
 
-    static findAndUpdate(query, details){
-        Property.findOneAndUpdate(query, {propertyDetails: details}, {upsert: true}, function(err, doc){
-            if(err) console.log(err);
-        });
-    }
-
     static async genHash(data){
         return new Promise((resolve, reject) => {
             bcrypt.genSalt(10, function(err, salt){
