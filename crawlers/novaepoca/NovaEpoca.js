@@ -20,27 +20,26 @@ class NovaEpoca extends GenericExtractor{
         
         console.log(`Delay time for pagination: ${config.delays.pagination}.`);
         await delay(config.delays.pagination);
-        
-        const result = await NEUtils.getBeighborhood({value: this.params.location});
 
-        if(!result) throw new Error("Location not found!");
-
-        const idBeighborhood = result.id; 
-        
         console.log(`Search params:   \n location: ${this.params.location}.   \n purpose: ${this.params.purpose}.   \n type: ${NEUtils.getPropertyType(this.params.type, this.params.purpose)}`);
+        
+        let result = await NEUtils.getBeighborhood({value: this.params.location});
+        // if(!result) throw new Error(`Não foi possível encontrar o ID do bairro ${this.params.location}!`);
+        if(!result) return false;
+        let idBeighborhood = result.id; 
         
         try{
             const totalPages = await this.getTotalPages(idBeighborhood);
 
+            // o metodo getTotalPages retorna nulo se nao for encontrado resultados na pagina.
             if(!totalPages) return false;
 
-            console.log(`Total pages: ${totalPages.totalPages}`);
-            
-            if(totalPages.totalPages <= 0) return false;
+            console.log(JSON.stringify(totalPages));
             
             for (let i = 1; i <= totalPages.totalPages; i++) {
             // for (let i = 1; i <= 1; i++) {
                 console.log(`Starting scraper for page ${i}`);
+
                 let url = `https://www.novaepoca.com.br/${this.params.purpose}/?bairro=${idBeighborhood}&pagina=${i}&Tipos[]=${this.params.type}&ValorMin=0&ValorMax=5.000.000+&AreaMin=0&AreaMax=6.000+&`;
                 if(!this.params.type) url = `https://www.novaepoca.com.br/${this.params.purpose}/?bairro=${idBeighborhood}&pagina=${i}&ValorMin=0&ValorMax=5.000.000+&AreaMin=0&AreaMax=6.000+&`;
                 
@@ -50,7 +49,7 @@ class NovaEpoca extends GenericExtractor{
                 };
 
                 const $ = await this.request.loadHtml(await this.request.req(options));
-                const listResults = $(".resulto_col1");
+                const listResults = await $(".resulto_col1");                
 
                 const resultsPerPage = [];
 
@@ -61,15 +60,26 @@ class NovaEpoca extends GenericExtractor{
 
                     // resulto_col1
                     data.mainInfo       = await this.getMainInfo(listResults.eq(i));
+
+                    // let exists = await Property.findOne({ "mainInfo.url": data.mainInfo.url });
+                    // if(exists) continue;
+
                     data.mainInfo.imgs  = await this.getUrlImgsFromMainInfo(listResults.eq(i));
                     data.hash           = await GenericExtractor.genHash(data.mainInfo);
-                    data.dtRegister     = moment();
-                    // data.source         = "Nova Época";
+                    data.dtRegister     = await moment();
+                    data.source         = "Nova Época";
 
                     // for now all results will be saved. i'll change soon to save with upsert.
                     const PropertyMainInfoSchema = data;
-                    resultsPerPage.push(PropertyMainInfoSchema);
+                    await resultsPerPage.push(PropertyMainInfoSchema);
+
+                    await delay(500);
                 }
+
+                console.log(listResults.length);
+                if(listResults.length <= 0) console.log("Nenhum imóvel encontrado.\n\n");
+                if(listResults.length > 0) console.log(`Encontrado ${resultsPerPage.length} imóveis para esta página.`);
+
                 await GenericExtractor.saveMainInfoMProperties(resultsPerPage);
             }
             return true;
@@ -79,11 +89,10 @@ class NovaEpoca extends GenericExtractor{
         }
     }
 
-    async getTotalPages(){
+    async getTotalPages(id){
         
-        const result            = await NEUtils.getBeighborhood({value: this.params.location});
+        const result            = await NEUtils.getBeighborhood({id});
         const idBeighborhood    = result.id;
-        const location          = result.value;
 
         const url = `https://www.novaepoca.com.br/prontos/?bairro=${idBeighborhood}&pagina=1&Tipos[]=${this.params.type}&ValorMin=0&ValorMax=5.000.000+&AreaMin=0&AreaMax=6.000+&`
 
@@ -100,6 +109,8 @@ class NovaEpoca extends GenericExtractor{
             const perPage       = $(".content-lista").find(".resulto_col1").length;
             const resumeTotal   = await this.resumeTotalPages(total, perPage);
 
+            console.log(`total ${total}, por pagina ${perPage}`)
+
             return resumeTotal;
         }
 
@@ -108,7 +119,7 @@ class NovaEpoca extends GenericExtractor{
 
     async getMainInfo(listItem){
         const mainInfo              = {};
-        mainInfo.title              = listItem.find(".resulto_col1_rit > a > h2").text();
+        mainInfo.title              = await this.formatTitle(listItem.find(".resulto_col1_rit > a > h2"));
         mainInfo.location           = listItem.find(".resulto_col1_rit > h4").text();
         mainInfo.shortDescription   = listItem.find(".resulto_col1_rit > p").text();
         mainInfo.url                = listItem.find(".resulto_col1_rit > .resulto_item_btn > a").attr("href");
@@ -182,6 +193,9 @@ class NovaEpoca extends GenericExtractor{
         return result;
     }
 
+    // -----------------------------------------------------------------------------------------------------------------
+    // formats functions
+
     async formatAddress(addressSelector){
         const strongs = addressSelector.find("strong");
         if(strongs.length != 3) throw new Error("Default are 3 tags strong. Adjust if the pattern changes.");
@@ -193,6 +207,15 @@ class NovaEpoca extends GenericExtractor{
         const city      = this.cheerio.load(strongsArray[2]); 
         return `${street.text()}, ${city.text()}`;
     }
+
+    async formatTitle(titleSelector){
+        const text = await titleSelector.text();
+        const address = text.replace("\n", " ");
+        return address;
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    // details property functions
 
     async extractPropertyDetails(url){
         // acomodation,  bathrooms, 

@@ -7,6 +7,7 @@ const figlet            = require('figlet');
 const NEUtils           = require('./NovaEpocaUtils');
 const Log               = require('../../models/log');
 const delay             = require('../../helper/delay');
+const _                 = require('lodash');
 
 global.log = {};
 
@@ -35,19 +36,31 @@ const ExecuteMainInfo = async () => {
     db.once('open', async function(){
         // nao passar parametros para crawlear o site todo.
         // "Meier", "prontos"
-        const params = await BuildParams.GetParams("Cascadura", "prontos");
-        for(let i = 0; i < params.length; i++){
-            console.log(`${i+1} - PURPOSE.: ${params[i].purpose} - LOCATION.: ${params[i].location} - TYPE.: ${params[i].type}.`);
+
+        // const params = await BuildParams.GetParams();
+        // const paramsShuffle = _.shuffle(params);
+
+        const paramsShuffle = [{
+            "purpose" : "prontos",
+            "location" : "Grajau",
+            "type" : 5,
+        }]
+
+        console.log(`Foram encontrados ${paramsShuffle.length} pesquisas para executar.`);
+
+        for(let i = 0; i < paramsShuffle.length; i++){
+            console.log(`${i+1} - PURPOSE.: ${paramsShuffle[i].purpose} - LOCATION.: ${paramsShuffle[i].location} - TYPE.: ${paramsShuffle[i].type}.`);
             let params2 = {
-                location: params[i].location,
-                purpose: params[i].purpose,
-                type: params[i].type
+                location: paramsShuffle[i].location,
+                purpose: paramsShuffle[i].purpose,
+                type: paramsShuffle[i].type
             };
             const NE = new NovaEpoca(params2);
             let ok = await NE.getMainInfoPropeties();
             if(ok){
                 console.log("Page screpped successfully!");
             }
+            console.log("\n======================================================================================================================\n");
         }
         const _log = await SalvarLog(log);
         console.log(_log);

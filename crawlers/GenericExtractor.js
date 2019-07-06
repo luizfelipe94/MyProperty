@@ -25,7 +25,7 @@ class GenericExtractor {
 
     static async saveMainInfoMProperties(data){
         if(!Array.isArray(data)) throw new Error("Array are expected. ");
-        if(data.length < 1) throw new Error("Necessary one or more documents to be saved. ");
+        // if(data.length < 1) throw new Error("Necessary one or more documents to be saved. ");
         try{
             await Property.insertMany(data, function(err, docs){
                 if(err) throw err;

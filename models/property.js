@@ -9,7 +9,6 @@ const MainInfo = new mongoose.Schema({
     imgs:               { type: Array },
     type:               { type: String },
     dtRegister:         { type: Date, required: true, default: Date.now() },
-    // source:             { type: String, required: true },
 });
 
 const PropertyDetails = new mongoose.Schema({
@@ -37,7 +36,8 @@ const PropertySchema = new mongoose.Schema({
     isActive:           { type: Boolean, required: true, default: true },
     dtRegister:         { type: Date, required: true, default: Date.now() },
     dtUpdated:          { type: Date },
-    version:            { type: Number, required: true, default: 0, min: 0 }
+    version:            { type: Number, required: true, default: 0, min: 0 },    
+    source:             { type: String, required: true },
 });
 
 

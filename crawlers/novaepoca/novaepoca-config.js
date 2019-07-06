@@ -1,6 +1,6 @@
 module.exports = {
     delays: {
-        pagination: 2000,
-        pageProperty: 3000
+        pagination: 1000,
+        pageProperty: 1000
     }
 }

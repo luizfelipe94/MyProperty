@@ -18,14 +18,20 @@ class Request {
     }
 
     static async req(options){
-        if(!options.delay) options.delay = 0;
-        if(options.delay > 0) await delay(options.delay);
-        if(!options.url) throw new Error("Necessario passar a url.");
-        if(!options.method) options.method = "get";
-        const result = rp(options)
-        .then(resp => resp )
-        .catch(err => err);
-        return result;
+        try{
+            if(!options.delay) options.delay = 0;
+            if(options.delay > 0) await delay(options.delay);
+            if(!options.url) throw new Error("Necessario passar a url.");
+            if(!options.method) options.method = "get";
+            const result = rp(options)
+            .then(resp => resp )
+            .catch(err => err);
+            return result;
+        }catch(e){
+            throw new Error("Not possible to complete request");
+            // depois salvar log disso
+            // talvez continuar pra proxima consulta se não conseguir completar a requisição
+        }
     }
 
     static async formatCookies(cookies){
